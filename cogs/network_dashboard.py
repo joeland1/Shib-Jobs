@@ -55,12 +55,12 @@ class Network_dashboard(commands.Cog):
 
         #print("best hash = "+best_hash)
 
-        embed.add_field(name="Blockhash",value=best_hash[:5]+"..."+best_hash[-5:],inline=True)
+        embed.add_field(name="Blockhash",value=best_hash[:8]+"..."+best_hash[-8:],inline=True)
 
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_footer(text="Last updated")
         #row 2
-        embed.set_author(name=self.bot.user.name, url="https://github.com", icon_url=self.bot.user.avatar_url)
+        embed.set_author(name=self.bot.user.name, url=crypto_perams.WALLET_LINK, icon_url=self.bot.user.avatar_url)
 
         await message.edit(content="", embed=embed)
         #await message.channel.send(self.ctr)
@@ -91,7 +91,7 @@ class Network_dashboard(commands.Cog):
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_footer(text="Last updated")
 
-        embed.set_author(name=self.bot.user.name, url="https://github.com", icon_url=self.bot.user.avatar_url)
+        embed.set_author(name=self.bot.user.name, url=crypto_perams.PRICE_SOURCE_LINK, icon_url=self.bot.user.avatar_url)
 
         await message.edit(content="", embed=embed)
 
@@ -120,7 +120,7 @@ class Network_dashboard(commands.Cog):
         embed.timestamp=datetime.datetime.utcnow()
 
         embed.set_footer(text="Last updated")
-        embed.set_author(name=self.bot.user.name, url="https://github.com", icon_url=self.bot.user.avatar_url)
+        embed.set_author(name=self.bot.user.name, url=crypto_perams.MNO_LINK, icon_url=self.bot.user.avatar_url)
 
         await message.edit(content="",embed=embed)
 
