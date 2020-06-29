@@ -21,4 +21,6 @@ GITHUB_WEBHOOK_CHANNEL=706308543376130081
 TIMEZONE='est'
 #level,role_id
 LEVELS=[[1,"First"],[2,"Second"]]
-XP_INCRAMENT=5 #amount of seconds between each reward
+
+XP_INCRAMENT=5 #range of added xp 1-> this value
+XP_TIME_MIN=5 #amount of seconds between each reward

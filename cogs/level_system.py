@@ -3,6 +3,7 @@ import sqlite3
 import os
 import time
 import random
+import config
 
 class Level_system(commands.Cog):
     def __init__(self, bot):
@@ -37,9 +38,14 @@ class Level_system(commands.Cog):
     async def on_message(self,ctx):
         if ctx.author.bot is True:
             return
-        #gotta do this part
+        current_time = int(time.time())
+        if current_time - get_last_time(ctx.author.id) <= config.XP_TIME_MIN
+            return
+        modify_xp_value(ctx.author.id)
     #@commands.command()
     #async def remove(self,ctx):
+    async def on_member_ban(self, guild, banned_member):
+        print("removed user from the list")
 
 
 def modify_xp_value(discord_id):

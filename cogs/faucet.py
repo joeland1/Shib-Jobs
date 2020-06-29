@@ -104,7 +104,7 @@ class Faucet(commands.Cog):
                 async with ctx.author.typing():
                     confirmation_message = await ctx.author.send("Catcha is correct... attempting to withdraw now")
 
-                    if amount is not None and is_a_number(amount) is False:
+                    if amount is not None and global_functions.is_a_number(amount) is False:
                         await ctx.author.send("You have inputed an invalid amount")
                         return
 
@@ -126,7 +126,7 @@ class Faucet(commands.Cog):
 
                         modify_db_balance(ctx.author.id, -1*current_balance)
 
-                    elif is_a_number(amount) is True:
+                    elif global_functions.is_a_number(amount) is True:
                         amount=float(amount)
                         if(amount < crypto_perams.FAUCET_MIN_WITHDRAW):
                             print("you need to be above minimum withdraw balance")
@@ -159,7 +159,7 @@ class Faucet(commands.Cog):
         if user_entry is None:
             print("register first")
             return
-            
+
         last_claimed_time = get_db_time(ctx.author.id)
         current_time = int(time.time())
 
@@ -304,13 +304,6 @@ async def get_response(self,ctx):
         print("replied in time and is from same user")
         print("message content="+message.content)
         return message.content
-
-def is_a_number(number):
-    try:
-        float(number)
-        return True
-    except ValueError:
-        return False
 
 def setup(bot):
     bot.add_cog(Faucet(bot))
