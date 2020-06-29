@@ -149,10 +149,22 @@ class Faucet(commands.Cog):
 
     @commands.command()
     async def claim(self,ctx):
+        conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
+        cursor=conn.cursor()
+
+        search_command= 'SELECT * FROM FAUCET_ADDRESSES WHERE USER_ID = ?'
+        cursor.execute(search_command,(ctx.author.id,))
+
+        user_entry = cursor.fetchone()
+        if user_entry is None:
+            print("register first")
+            return
+            
         last_claimed_time = get_db_time(ctx.author.id)
         current_time = int(time.time())
 
         if current_time - last_claimed_time <= crypto_perams.FAUCET_TIME_DELAY:
+            await ctx.channel.send("You are still too early")
             return
 
         captcha_answer = generate_captcha(ctx.author)
@@ -160,7 +172,7 @@ class Faucet(commands.Cog):
         user_captcha_response= await get_response(self,ctx)
 
         if user_captcha_response == False:
-            #send crap
+            await ctx.channel.send("You did not reply in time")
             return
         elif str(user_captcha_response)==str(captcha_answer):
             modify_db_balance(ctx.author.id,crypto_perams.FAUCET_REWARD)
@@ -287,7 +299,6 @@ async def get_response(self,ctx):
         print("waiting for message")
         message = await self.bot.wait_for('message', timeout=30.0, check=check)
     except asyncio.TimeoutError:
-        await ctx.author.send('you did not respond in time')
         return False;
     else:
         print("replied in time and is from same user")
