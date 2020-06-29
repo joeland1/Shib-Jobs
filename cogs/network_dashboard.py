@@ -8,6 +8,8 @@ import datetime
 from pytz import timezone
 import config
 
+#is there way to remove all this
+
 from pycoingecko import CoinGeckoAPI
 
 class Network_dashboard(commands.Cog):
