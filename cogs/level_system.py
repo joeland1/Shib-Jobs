@@ -1,4 +1,6 @@
 from discord.ext import commands
+import sqlite3
+import os
 
 class Level_system(commands.Cog):
     def __init__(self, bot):
@@ -31,7 +33,7 @@ class Level_system(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self,ctx):
-        if ctx.author.bot == True:
+        if ctx.author.bot is True:
             return
         #gotta do this part
 
