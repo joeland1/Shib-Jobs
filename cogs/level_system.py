@@ -27,7 +27,7 @@ class Level_system(commands.Cog):
             display_level-=1
             remaining_xp= get_xp_value(ctx.author.id)-(display_level**2+9)
 
-            img = Image.new('RGB', (3000, 1000), color = (73, 109, 137))
+            final_display = Image.new('RGB', (3000, 1000), color = (73, 109, 137))
 
             #d = ImageDraw.Draw(img)
             #d.text((10,10), "Hello World", fill=(255,255,0))
@@ -43,15 +43,23 @@ class Level_system(commands.Cog):
             upscale_factor=10
             base_size=750
 
-            mask_im = Image.new("L", (base_size*upscale_factor,base_size*upscale_factor), 0)
-            draw = ImageDraw.Draw(mask_im)
-            draw.ellipse(((0,0), mask_im.size), fill=255)
-            mask_im = mask_im.resize((750,750), Image.LANCZOS)
-            mask_im.save('downlscale.png')
+            #gets the shape of the profile picture
+            discord_pfp_shape = Image.new("L", (base_size*upscale_factor,base_size*upscale_factor), 0)
+            draw1 = ImageDraw.Draw(discord_pfp_shape)
+            draw1.ellipse(((0,0), discord_pfp_shape.size), fill=255)
+            discord_pfp_shape = discord_pfp_shape.resize((750,750), Image.LANCZOS)
+            discord_pfp_shape.save('downlscale_discord_pfp_shape.png')
 
-            mask_im.paste(discord_pfp_source,(0,0),mask_im)
+            #get outline for the shape of the pfp
+            discord_pfp_outer_circle = Image.new("RGB", (760,760), color=(193,151,79))
+            discord_pfp_outer_circle.save('downlscale_discord_pfp_outline_start.png')
+            discord_pfp_outside_shape = discord_pfp_shape.resize((760,760), Image.LANCZOS)
+            discord_pfp_outer_circle.save('downlscale_discord_pfp_outline.png')
 
-            img.save('pil_text.png')
+            final_display.paste(discord_pfp_outer_circle,(0,0),discord_pfp_outside_shape)
+            final_display.paste(discord_pfp_source,(5,5),discord_pfp_shape)
+
+            final_display.save('sent_card.png')
 
     # for the table
     @commands.Cog.listener()
