@@ -6,6 +6,8 @@ import random
 import config
 import global_functions
 from io import BytesIO
+import os
+import discord
 
 from PIL import Image, ImageDraw
 
@@ -32,9 +34,8 @@ class Level_system(commands.Cog):
             #d = ImageDraw.Draw(img)
             #d.text((10,10), "Hello World", fill=(255,255,0))
 
-            asset = ctx.author.avatar_url_as(size=1024)
-            data = BytesIO(await asset.read())
-            discord_pfp_source = Image.open(data)
+            asset = ctx.author.avatar_url_as(format="png",size=1024)
+            discord_pfp_source = Image.open(BytesIO(await asset.read()))
             #print(discord_pfp_source.size[0])
             discord_pfp_source=discord_pfp_source.resize((750,750), resample=Image.LANCZOS)
             discord_pfp_source.save('discord_pfp_source.png')
@@ -71,7 +72,22 @@ class Level_system(commands.Cog):
             final_display.paste(discord_pfp_outer_circle,(background_offset_x,background_offset_y),discord_pfp_outside_shape)
             final_display.paste(discord_pfp_source,(pfp_offset_x,pfp_offset_y),discord_pfp_shape)
 
-            final_display.save('sent_card.png')
+            final_display.resize((900,300), resample=Image.LANCZOS)
+
+            arr=BytesIO()
+            final_display.save(arr, format='png',optimize=True,quality=95)
+            arr.seek(0)
+            await ctx.channel.send(file=discord.File(arr, "my_rank.png"))
+
+            final_display.save(os.getcwd()+"\\"+str(ctx.author.id)+'_sent_card.png')
+
+
+            #final_display.save(imgByteArr, format='PNG')
+            #imgByteArr=imgByteArr.getvalue()
+
+
+
+
 
     # for the table
     @commands.Cog.listener()
