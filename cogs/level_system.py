@@ -27,16 +27,29 @@ class Level_system(commands.Cog):
             display_level-=1
             remaining_xp= get_xp_value(ctx.author.id)-(display_level**2+9)
 
-            img = Image.new('RGB', (500, 148), color = (73, 109, 137))
+            img = Image.new('RGB', (3000, 1000), color = (73, 109, 137))
 
-            d = ImageDraw.Draw(img)
+            #d = ImageDraw.Draw(img)
             #d.text((10,10), "Hello World", fill=(255,255,0))
 
-            asset = ctx.author.avatar_url_as(size=128)
+            asset = ctx.author.avatar_url_as(size=1024)
             data = BytesIO(await asset.read())
-            final_discord_pfp = Image.open(data).convert("RGBA")
+            discord_pfp_source = Image.open(data)
+            #print(discord_pfp_source.size[0])
+            discord_pfp_source=discord_pfp_source.resize((750,750), resample=Image.LANCZOS)
+            discord_pfp_source.save('discord_pfp_source.png')
 
-            img.paste(final_discord_pfp, (10,10))
+
+            upscale_factor=10
+            base_size=750
+
+            mask_im = Image.new("L", (base_size*upscale_factor,base_size*upscale_factor), 0)
+            draw = ImageDraw.Draw(mask_im)
+            draw.ellipse(((0,0), mask_im.size), fill=255)
+            mask_im = mask_im.resize((750,750), Image.LANCZOS)
+            mask_im.save('downlscale.png')
+
+            mask_im.paste(discord_pfp_source,(0,0),mask_im)
 
             img.save('pil_text.png')
 
