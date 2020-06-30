@@ -72,11 +72,12 @@ class Level_system(commands.Cog):
             final_display.paste(discord_pfp_outer_circle,(background_offset_x,background_offset_y),discord_pfp_outside_shape)
             final_display.paste(discord_pfp_source,(pfp_offset_x,pfp_offset_y),discord_pfp_shape)
 
-            final_display.resize((900,300), resample=Image.LANCZOS)
+            #final_display.resize((900,300), resample=Image.LANCZOS)
 
             arr=BytesIO()
-            final_display.save(arr, format='png',optimize=True,quality=95)
+            final_display.save(arr, format='png',optimize=True)
             arr.seek(0)
+
             await ctx.channel.send(file=discord.File(arr, "my_rank.png"))
 
             final_display.save(os.getcwd()+"\\"+str(ctx.author.id)+'_sent_card.png')
