@@ -41,23 +41,35 @@ class Level_system(commands.Cog):
 
 
             upscale_factor=10
-            base_size=750
+            base_size_pfp=750
+            base_size_outside=780
 
             #gets the shape of the profile picture
-            discord_pfp_shape = Image.new("L", (base_size*upscale_factor,base_size*upscale_factor), 0)
+            discord_pfp_shape = Image.new("L", (base_size_pfp*upscale_factor,base_size_pfp*upscale_factor), 0)
             draw1 = ImageDraw.Draw(discord_pfp_shape)
             draw1.ellipse(((0,0), discord_pfp_shape.size), fill=255)
-            discord_pfp_shape = discord_pfp_shape.resize((750,750), Image.LANCZOS)
+            discord_pfp_shape = discord_pfp_shape.resize((base_size_pfp,base_size_pfp), Image.LANCZOS)
             discord_pfp_shape.save('downlscale_discord_pfp_shape.png')
 
             #get outline for the shape of the pfp
-            discord_pfp_outer_circle = Image.new("RGB", (760,760), color=(193,151,79))
+            discord_pfp_outer_circle = Image.new("RGB", (base_size_outside,base_size_outside), color=(193,151,79))
             discord_pfp_outer_circle.save('downlscale_discord_pfp_outline_start.png')
-            discord_pfp_outside_shape = discord_pfp_shape.resize((760,760), Image.LANCZOS)
+            discord_pfp_outside_shape = discord_pfp_shape.resize((base_size_outside,base_size_outside), Image.LANCZOS)
             discord_pfp_outer_circle.save('downlscale_discord_pfp_outline.png')
 
-            final_display.paste(discord_pfp_outer_circle,(0,0),discord_pfp_outside_shape)
-            final_display.paste(discord_pfp_source,(5,5),discord_pfp_shape)
+            #we only need y, can set x manually
+            background_offset_x=20
+            background_offset_y = int(  (final_display.size[1]-discord_pfp_outside_shape.size[1])*0.5)
+            print("background"+str(background_offset_y))
+
+            pfp_offset_x= background_offset_x + int((discord_pfp_outside_shape.size[0]-discord_pfp_source.size[0])*0.5)
+            pfp_offset_y= background_offset_y + int((discord_pfp_outside_shape.size[0]-discord_pfp_source.size[0])*0.5)
+
+            #calculates the distance down + right based on the pfp location
+            #offset_pfp_outline=pfp_both_offset + int(  (discord_pfp_outside_shape.size[0]-discord_pfp_shape.size[0])*0.5)
+
+            final_display.paste(discord_pfp_outer_circle,(background_offset_x,background_offset_y),discord_pfp_outside_shape)
+            final_display.paste(discord_pfp_source,(pfp_offset_x,pfp_offset_y),discord_pfp_shape)
 
             final_display.save('sent_card.png')
 
