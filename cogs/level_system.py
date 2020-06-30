@@ -12,9 +12,20 @@ class Level_system(commands.Cog):
     #@commands.Cog.listener() -> use for events like on_ready
 
     @commands.command()
-    async def rank(self, ctx):
-        print("here is ranks")
+    async def rank(self, ctx, arg1=None):
+        #level up algo: x^2+10-> will determine level rank for level "x" so level 0 requires 10 pts before getting to lv 1
+        if arg1 is None:
+            display_level=1
+            #whatever equation you want, but minus 1, idk y it jsut works
+            while display_level**2+9 < get_xp_value(ctx.author.id):
+                display_level+=1
+            #use while to get Levels
+            #use for to get role
+            display_level-=1
 
+            print(str(display_level))
+
+    # for the table
     @commands.Cog.listener()
     async def on_ready(self):
         try:
@@ -33,7 +44,6 @@ class Level_system(commands.Cog):
             print("old table found for levels -> using old db")
             print("if you want to use a new one, delete rank_recording.db")
             conn.close()
-        #level up algo: x^2+10-> will determine level rank for level "x" so level 0 requires 10 pts before getting to lv 1
 
     @commands.Cog.listener()
     async def on_member_join(self,member):
