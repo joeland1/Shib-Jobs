@@ -5,6 +5,9 @@ import time
 import random
 import config
 import global_functions
+from io import BytesIO
+
+from PIL import Image, ImageDraw
 
 class Level_system(commands.Cog):
     def __init__(self, bot):
@@ -22,8 +25,20 @@ class Level_system(commands.Cog):
             #use while to get Levels
             #use for to get role
             display_level-=1
+            remaining_xp= get_xp_value(ctx.author.id)-(display_level**2+9)
 
-            print(str(display_level))
+            img = Image.new('RGB', (500, 148), color = (73, 109, 137))
+
+            d = ImageDraw.Draw(img)
+            #d.text((10,10), "Hello World", fill=(255,255,0))
+
+            asset = ctx.author.avatar_url_as(size=128)
+            data = BytesIO(await asset.read())
+            final_discord_pfp = Image.open(data).convert("RGBA")
+
+            img.paste(final_discord_pfp, (10,10))
+
+            img.save('pil_text.png')
 
     # for the table
     @commands.Cog.listener()
