@@ -4,6 +4,7 @@ import os
 import time
 import random
 import config
+import global_functions
 
 class Level_system(commands.Cog):
     def __init__(self, bot):
@@ -35,17 +36,72 @@ class Level_system(commands.Cog):
         #level up algo: x^2+10-> will determine level rank for level "x" so level 0 requires 10 pts before getting to lv 1
 
     @commands.Cog.listener()
+    async def on_member_join(self,member):
+        conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+        cur=conn.cursor()
+
+        search_command= 'SELECT * FROM LEVELS WHERE USER_ID = ?'
+        cur.execute(search_command,(member.id,))
+        user_entries=cur.fetchone()
+
+        if user_entries is None:
+            add_command = 'INSERT INTO LEVELS (USER_ID,LAST_MESSAGE_TIME,XP) VALUES (?,?,?)'
+            input_data = (member.id,0,random.randint(1,config.XP_INCRAMENT))
+            conn.execute(add_command,input_data)
+            conn.commit()
+
+        cur.close()
+        conn.close()
+        print("added new user")
+
+    @commands.Cog.listener()
     async def on_message(self,ctx):
         if ctx.author.bot is True:
+            print("is bot")
             return
         current_time = int(time.time())
-        if current_time - get_last_time(ctx.author.id) <= config.XP_TIME_MIN
+        if current_time - get_last_time(ctx.author.id) <= config.XP_TIME_MIN:
             return
+
+        print("author id="+str(ctx.author.id))
         modify_xp_value(ctx.author.id)
     #@commands.command()
     #async def remove(self,ctx):
+
+    #should implement removal for leaving own own?
+    @commands.Cog.listener()
     async def on_member_ban(self, guild, banned_member):
-        print("removed user from the list")
+        print("membver banning occuring")
+        conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+        conn.execute('DELETE FROM LEVELS WHERE USER_ID = ?',(banned_member.id,))
+        conn.commit()
+        conn.close()
+
+        print("deleted")
+
+    #async def on_member_remove(member_left):
+    #    conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+    #    conn.execute('DELETE FROM LEVELS WHERE USER_ID = ?',(member_left.id))
+    #    conn.commit()
+    #    conn.close()
+
+    @commands.command()
+    async def print_out_levels(self,ctx):
+        if global_functions.checkmodrole(ctx) is True:
+            print("is admin")
+            conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+            cursor=conn.cursor()
+
+            print("getting data")
+            all_data=cursor.execute("SELECT * FROM LEVELS")
+
+            for data in all_data:
+                print(data)
+
+            cursor.close()
+            conn.close()
+        else:
+            print(ctx.author.name+" tried to print out a level table")
 
 
 def modify_xp_value(discord_id):
@@ -60,23 +116,28 @@ def modify_xp_value(discord_id):
 
     # update if there is 1 entry
     if user_entries == 1:
-        updating_command='UPDATE LEVELS SET LAST_MESSAGE_TIME = ? XP = ? WHERE USER_ID = ?'
-        updated_level = (int(time.time()), get_xp_value(discord_id)+random.randint(1,config.XP_INCRAMENT),discord_id)
-        conn.execute(updating_command,updating_address)
+        updating_command='UPDATE LEVELS SET LAST_MESSAGE_TIME = ?, XP = ? WHERE USER_ID = ?'
+        updated_level_data = (int(time.time()), get_xp_value(discord_id)+random.randint(1,config.XP_INCRAMENT),discord_id)
+        conn.execute(updating_command,updated_level_data)
         conn.commit()
+        print("added xp")
 
-    #add if no entires
-    elif faucet_address_entries == 0:
+    #add if no entires, should not happen because the user should be added
+    elif user_entries == 0:
         add_command = 'INSERT INTO LEVELS (USER_ID,LAST_MESSAGE_TIME,XP) VALUES (?,?,?)'
-        input_data= (discord_id,)
+        input_data = (discord_id,int(time.time()),random.randint(1,config.XP_INCRAMENT))
         conn.execute(add_command,input_data)
         conn.commit()
+        print("added new user")
+
     else:
         print("more than 1 entry somehow")
+
+
     conn.close()
 
 def get_xp_value(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
     cursor=conn.cursor()
 
     search_command= 'SELECT XP FROM LEVELS WHERE USER_ID = ?'
@@ -89,17 +150,19 @@ def get_xp_value(discord_id):
     return xp
 
 def get_last_time(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
     cursor=conn.cursor()
 
-    search_command= 'SELECT LAST_MESSAGE_TIME FROM LEVELS WHERE USER_ID = ?'
+    search_command= 'SELECT * FROM LEVELS WHERE USER_ID = ?'
     cursor.execute(search_command,(discord_id,))
-    last_time = cursor.fetchone()[0]
-
+    entry = cursor.fetchone()
     cursor.close()
     conn.close()
 
-    return last_time
+    if entry is None:
+        return 0
+    else:
+        return entry[2]
 
 
 def setup(bot):
