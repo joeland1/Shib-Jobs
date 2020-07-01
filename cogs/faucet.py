@@ -15,6 +15,8 @@ import random
 
 import asyncio
 
+from io import BytesIO
+
 class Faucet(commands.Cog):
     def __init__(self, bot):
             self.bot=bot
@@ -167,7 +169,7 @@ class Faucet(commands.Cog):
             await ctx.channel.send("You are still too early")
             return
 
-        captcha_answer = generate_captcha(ctx.author)
+        captcha_answer = await generate_captcha(ctx.author)
 
         user_captcha_response= await get_response(self,ctx)
 
@@ -212,7 +214,7 @@ def modify_db_address(discord_id,crypto_address):
     print("registered")
 
 def modify_db_balance(discord_id,amount_to_add):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     add_command = 'UPDATE FAUCET_ADDRESSES SET BALANCE = ? WHERE USER_ID = ?'
@@ -226,7 +228,7 @@ def modify_db_balance(discord_id,amount_to_add):
     conn.close()
 
 def modify_db_time(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     add_command = 'UPDATE FAUCET_ADDRESSES SET TIME = ? WHERE USER_ID = ?'
@@ -239,7 +241,7 @@ def modify_db_time(discord_id):
     conn.close()
 
 def get_db_balance(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     search_command= 'SELECT * FROM FAUCET_ADDRESSES WHERE USER_ID = ?'
@@ -252,7 +254,7 @@ def get_db_balance(discord_id):
     return balance
 
 def get_db_address(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     search_command= 'SELECT * FROM FAUCET_ADDRESSES WHERE USER_ID = ?'
@@ -265,12 +267,12 @@ def get_db_address(discord_id):
     return addie
 
 def get_db_time(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     search_command= 'SELECT * FROM FAUCET_ADDRESSES WHERE USER_ID = ?'
     cursor.execute(search_command,(discord_id,))
-    unix_time = cursor.fetchone()[4]
+    unix_time = cursor.fetchone()[2]
 
     cursor.close()
     conn.close()
@@ -285,9 +287,14 @@ async def generate_captcha(user):
 
     captcha_image_file_name = os.getcwd()+"\\faucet_images\\"+str(user.id)+"_captcha_image.png"
     image = image_captcha.generate_image(captcha_answer)
-    image_captcha.write(captcha_answer, captcha_image_file_name)
 
-    await user.send(file=discord.File(captcha_image_file_name))
+
+
+    arr=BytesIO()
+    image.save(arr, format='png',optimize=True)
+    arr.seek(0)
+
+    await user.send(file=discord.File(arr, "captcha.png"))
 
     return captcha_answer
 
