@@ -9,7 +9,7 @@ from io import BytesIO
 import os
 import discord
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 class Level_system(commands.Cog):
     def __init__(self, bot):
@@ -59,7 +59,7 @@ class Level_system(commands.Cog):
             discord_pfp_outer_circle.save('downlscale_discord_pfp_outline.png')
 
             #we only need y, can set x manually
-            background_offset_x=20
+            background_offset_x=100
             background_offset_y = int(  (final_display.size[1]-discord_pfp_outside_shape.size[1])*0.5)
             print("background"+str(background_offset_y))
 
