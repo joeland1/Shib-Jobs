@@ -22,28 +22,33 @@ class Level_system(commands.Cog):
         if arg1 is None:
             display_level=1
             #whatever equation you want, but minus 1, idk y it jsut works
-            while display_level**2+9 < get_xp_value(ctx.author.id):
+            while display_level**2+99 < get_xp_value(ctx.author.id):
                 display_level+=1
             #use while to get Levels
             #use for to get role
             display_level-=1
-            remaining_xp= get_xp_value(ctx.author.id)-(display_level**2+9)
+
+            remaining_xp= get_xp_value(ctx.author.id)-(display_level**2+99)
+            if remaining_xp < 0:
+                remaining_xp = get_xp_value(ctx.author.id)
+
+            print(str(get_xp_value(ctx.author.id)))
+            print(str(remaining_xp))
 
             final_display = Image.new('RGB', (3000, 1000), color = (73, 109, 137))
 
             #d = ImageDraw.Draw(img)
             #d.text((10,10), "Hello World", fill=(255,255,0))
 
+            upscale_factor=10
+            base_size_pfp=700
+            base_size_outside=base_size_pfp+30
+
             asset = ctx.author.avatar_url_as(format="png",size=1024)
             discord_pfp_source = Image.open(BytesIO(await asset.read()))
             #print(discord_pfp_source.size[0])
-            discord_pfp_source=discord_pfp_source.resize((750,750), resample=Image.LANCZOS)
+            discord_pfp_source=discord_pfp_source.resize((base_size_pfp,base_size_pfp), resample=Image.LANCZOS)
             discord_pfp_source.save('discord_pfp_source.png')
-
-
-            upscale_factor=10
-            base_size_pfp=750
-            base_size_outside=780
 
             #gets the shape of the profile picture
             discord_pfp_shape = Image.new("L", (base_size_pfp*upscale_factor,base_size_pfp*upscale_factor), 0)
@@ -74,12 +79,30 @@ class Level_system(commands.Cog):
 
             final_display_text = ImageDraw.Draw(final_display)
 
-            current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', 150)
-            name_displacement_x=background_offset_x+discord_pfp_outside_shape.size[0]+200
-            final_display_text.text((name_displacement_x,final_display.height/4), ctx.author.name+"#"+str(ctx.author.discriminator), font=current_font, fill=(255, 255, 0))
+            font_size = 200
+            min_font_size = 30
+
+            current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', font_size)
+            max_name_length = 1500
+
+            name_length = current_font.getsize(ctx.author.name)
+            while name_length[0] >= max_name_length:
+                font_size -= 10
+                print(str(font_size))
+                current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', font_size)
+                name_length = current_font.getsize(ctx.author.name)
+
+            name_displacement_x=background_offset_x+discord_pfp_outside_shape.size[0]+150
+            final_display_text.text((name_displacement_x,final_display.height/4), ctx.author.name, font=current_font, fill=(255, 255, 0))
+            base_height = current_font.getsize('l')
+
+            current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', font_size-40)
+            discriminator_length = current_font.getsize("#{0}".format(ctx.author.discriminator))
+            final_display_text.text((name_displacement_x+name_length[0], final_display.height/4+base_height[1]-discriminator_length[1]), "#{0}".format(ctx.author.discriminator), font=current_font, fill=(255,255,0))
+
 
             current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Open_Sans\\OpenSans-Regular.ttf', 100)
-            final_display_text.text( (name_displacement_x+100, final_display.height/2),"Level: "+str(display_level)+" XP: "+str(remaining_xp) , font=current_font, fill=(255, 255, 0))
+            final_display_text.text( (name_displacement_x+175, final_display.height/4+name_length[1]),"Level: "+str(display_level)+" XP: "+str(remaining_xp) , font=current_font, fill=(255, 255, 0))
             #final_display.resize((900,300), resample=Image.LANCZOS)
 
             arr=BytesIO()
@@ -90,6 +113,9 @@ class Level_system(commands.Cog):
 
             final_display.save(os.getcwd()+"\\"+str(ctx.author.id)+'_sent_card.png')
 
+            level_up_bar=Image.open(os.getcwd()+"\\level_pictures\\1.jpg")
+            level_up_bar.paste(Image.open(os.getcwd()+"\\level_pictures\\2.jpg"),(0,0))
+            level_up_bar.save(os.getcwd()+"\\bar_picture.jpg")
 
             #final_display.save(imgByteArr, format='PNG')
             #imgByteArr=imgByteArr.getvalue()
@@ -141,6 +167,9 @@ class Level_system(commands.Cog):
     async def on_message(self,ctx):
         if ctx.author.bot is True:
             print("is bot")
+            return
+        if ctx.content.startswith(self.bot.command_prefix):
+            print("is a command so not giving xp")
             return
         current_time = int(time.time())
         if current_time - get_last_time(ctx.author.id) <= config.XP_TIME_MIN:
