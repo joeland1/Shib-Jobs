@@ -76,10 +76,10 @@ class Level_system(commands.Cog):
 
             current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', 150)
             name_displacement_x=background_offset_x+discord_pfp_outside_shape.size[0]+200
-            final_display_text.text((name_displacement_x,10), ctx.author.name+"#"+str(ctx.author.discriminator), font=current_font, fill=(255, 255, 0))
+            final_display_text.text((name_displacement_x,final_display.height/4), ctx.author.name+"#"+str(ctx.author.discriminator), font=current_font, fill=(255, 255, 0))
 
             current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Open_Sans\\OpenSans-Regular.ttf', 100)
-            final_display_text.text( (name_displacement_x+100, 200),"Level and rank here" , font=current_font, fill=(255, 255, 0))
+            final_display_text.text( (name_displacement_x+100, final_display.height/2),"Level: "+str(display_level)+" XP: "+str(remaining_xp) , font=current_font, fill=(255, 255, 0))
             #final_display.resize((900,300), resample=Image.LANCZOS)
 
             arr=BytesIO()
