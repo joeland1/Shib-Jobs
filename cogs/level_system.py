@@ -79,26 +79,35 @@ class Level_system(commands.Cog):
 
             final_display_text = ImageDraw.Draw(final_display)
 
-            font_size = 200
+            font_size = 300
+            discriminator_size=font_size-35
             min_font_size = 30
 
-            current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', font_size)
-            max_name_length = 1500
+            name_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', font_size)
+            descriminator_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', font_size-35)
 
-            name_length = current_font.getsize(ctx.author.name)
-            while name_length[0] >= max_name_length:
+            max_total_length = 2000
+
+            name_length = name_font.getsize(ctx.author.name)
+            discriminator_length = descriminator_font.getsize("#"+str(ctx.author.discriminator))
+            while name_length[0]+discriminator_length[0] >= max_total_length:
                 font_size -= 10
                 print(str(font_size))
-                current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', font_size)
-                name_length = current_font.getsize(ctx.author.name)
+                name_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', font_size)
+                name_length = name_font.getsize(ctx.author.name)
+
+                while discriminator_length[1]/name_length[1]*100 >= 70:
+                    discriminator_size -=5
+                    descriminator_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', discriminator_size)
+
+                    discriminator_length = descriminator_font.getsize("#"+str(ctx.author.discriminator))
+
 
             name_displacement_x=background_offset_x+discord_pfp_outside_shape.size[0]+150
-            final_display_text.text((name_displacement_x,final_display.height/4), ctx.author.name, font=current_font, fill=(255, 255, 0))
-            base_height = current_font.getsize('l')
+            final_display_text.text((name_displacement_x,final_display.height/4), ctx.author.name, font=name_font, fill=(255, 255, 0))
+            base_height = name_font.getsize('l')
 
-            current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Montserrat\\Montserrat-Regular.ttf', font_size-40)
-            discriminator_length = current_font.getsize("#{0}".format(ctx.author.discriminator))
-            final_display_text.text((name_displacement_x+name_length[0], final_display.height/4+base_height[1]-discriminator_length[1]), "#{0}".format(ctx.author.discriminator), font=current_font, fill=(255,255,0))
+            final_display_text.text((name_displacement_x+name_length[0], final_display.height/4+base_height[1]-discriminator_length[1]), "#{0}".format(ctx.author.discriminator), font=descriminator_font, fill=(255,255,0))
 
 
             current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Open_Sans\\OpenSans-Regular.ttf', 100)
