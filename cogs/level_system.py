@@ -79,7 +79,7 @@ class Level_system(commands.Cog):
 
             final_display_text = ImageDraw.Draw(final_display)
 
-            font_size = 300
+            font_size = 200
             discriminator_size=font_size-35
             min_font_size = 30
 
