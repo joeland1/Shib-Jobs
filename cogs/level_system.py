@@ -48,20 +48,20 @@ class Level_system(commands.Cog):
             discord_pfp_source = Image.open(BytesIO(await asset.read()))
             #print(discord_pfp_source.size[0])
             discord_pfp_source=discord_pfp_source.resize((base_size_pfp,base_size_pfp), resample=Image.LANCZOS)
-            discord_pfp_source.save('discord_pfp_source.png')
+            #discord_pfp_source.save('discord_pfp_source.png')
 
             #gets the shape of the profile picture
             discord_pfp_shape = Image.new("L", (base_size_pfp*upscale_factor,base_size_pfp*upscale_factor), 0)
             draw1 = ImageDraw.Draw(discord_pfp_shape)
             draw1.ellipse(((0,0), discord_pfp_shape.size), fill=255)
             discord_pfp_shape = discord_pfp_shape.resize((base_size_pfp,base_size_pfp), Image.LANCZOS)
-            discord_pfp_shape.save('downlscale_discord_pfp_shape.png')
+            #discord_pfp_shape.save('downlscale_discord_pfp_shape.png')
 
             #get outline for the shape of the pfp
             discord_pfp_outer_circle = Image.new("RGB", (base_size_outside,base_size_outside), color=(193,151,79))
-            discord_pfp_outer_circle.save('downlscale_discord_pfp_outline_start.png')
+            #discord_pfp_outer_circle.save('downlscale_discord_pfp_outline_start.png')
             discord_pfp_outside_shape = discord_pfp_shape.resize((base_size_outside,base_size_outside), Image.LANCZOS)
-            discord_pfp_outer_circle.save('downlscale_discord_pfp_outline.png')
+            #discord_pfp_outer_circle.save('downlscale_discord_pfp_outline.png')
 
             #we only need y, can set x manually
             background_offset_x=100
@@ -69,7 +69,7 @@ class Level_system(commands.Cog):
             print("background"+str(background_offset_y))
 
             pfp_offset_x= background_offset_x + int((discord_pfp_outside_shape.size[0]-discord_pfp_source.size[0])*0.5)
-            pfp_offset_y= background_offset_y + int((discord_pfp_outside_shape.size[0]-discord_pfp_source.size[0])*0.5)
+            pfp_offset_y= background_offset_y + int((discord_pfp_outside_shape.size[1]-discord_pfp_source.size[1])*0.5)
 
             #calculates the distance down + right based on the pfp location
             #offset_pfp_outline=pfp_both_offset + int(  (discord_pfp_outside_shape.size[0]-discord_pfp_shape.size[0])*0.5)
@@ -104,34 +104,51 @@ class Level_system(commands.Cog):
 
 
             name_displacement_x=background_offset_x+discord_pfp_outside_shape.size[0]+150
-            final_display_text.text((name_displacement_x,final_display.height/4), ctx.author.name, font=name_font, fill=(255, 255, 0))
+            name_displacement_y= final_display.height/6
+            final_display_text.text((name_displacement_x,name_displacement_y), ctx.author.name, font=name_font, fill=(255, 255, 0))
             base_height = name_font.getsize('l')
 
-            final_display_text.text((name_displacement_x+name_length[0], final_display.height/4+base_height[1]-discriminator_length[1]), "#{0}".format(ctx.author.discriminator), font=descriminator_font, fill=(255,255,0))
-
+            final_display_text.text((name_displacement_x+name_length[0], name_displacement_y+base_height[1]-discriminator_length[1]), "#{0}".format(ctx.author.discriminator), font=descriminator_font, fill=(255,255,0))
 
             current_font = ImageFont.truetype(os.getcwd()+'\\fonts\\Open_Sans\\OpenSans-Regular.ttf', 100)
-            final_display_text.text( (name_displacement_x+175, final_display.height/4+name_length[1]),"Level: "+str(display_level)+" XP: "+str(remaining_xp) , font=current_font, fill=(255, 255, 0))
+            final_display_text.text( (name_displacement_x+175, name_displacement_y+name_length[1]),"Level: "+str(display_level)+" XP: "+str(remaining_xp)+"/"+str((display_level+1)**2+99), font=current_font, fill=(255, 255, 0))
             #final_display.resize((900,300), resample=Image.LANCZOS)
 
-            arr=BytesIO()
-            final_display.save(arr, format='png',optimize=True)
-            arr.seek(0)
+            #level_up_bar=Image.open(os.getcwd()+"\\level_pictures\\1.jpg").convert("RGBA")
 
-            await ctx.channel.send(file=discord.File(arr, "my_rank.png"))
+            curve_length = 200
+            bar_length_max = 1000
+            bar_inner_color = (0, 255, 0) #change
+            bar_outer_color = (0, 0, 255) # change
+
+            final_curve_size_x = 100
+            final_curve_size_y = final_curve_size_x*2
+
+
+            left_side_curve = Image.new('L',(curve_length*upscale_factor, curve_length*upscale_factor*2), color=0)
+            left_side_curve_draw= ImageDraw.Draw(left_side_curve)
+            left_side_curve_draw.ellipse(((0,0), (curve_length*upscale_factor*2, curve_length*upscale_factor*2)), fill=255)
+            left_side_curve = left_side_curve.resize( (final_curve_size_x, final_curve_size_y), Image.LANCZOS)
+            #left_side_curve.save("_semi_circle_resized_left.png")
+
+            right_side_curve = left_side_curve.rotate(180)
+
+            middle_bar = Image.new('RGBA', (bar_length_max, final_curve_size_y), color=bar_inner_color)
+            curve_color = Image.new('RGBA', (final_curve_size_x, final_curve_size_y), color=bar_inner_color)
+
+
+            final_display.paste(curve_color, (name_displacement_x,700),left_side_curve)
 
             final_display.save(os.getcwd()+"\\"+str(ctx.author.id)+'_sent_card.png')
-
-            level_up_bar=Image.open(os.getcwd()+"\\level_pictures\\1.jpg")
-            level_up_bar.paste(Image.open(os.getcwd()+"\\level_pictures\\2.jpg"),(0,0))
-            level_up_bar.save(os.getcwd()+"\\bar_picture.jpg")
 
             #final_display.save(imgByteArr, format='PNG')
             #imgByteArr=imgByteArr.getvalue()
 
-
-
-
+            arr=BytesIO()
+            final_display.save(arr, format='png',optimize=True)
+            arr.seek(0)
+            
+            await ctx.channel.send(file=discord.File(arr, "my_rank.png"))
 
     # for the table
     @commands.Cog.listener()
