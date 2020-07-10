@@ -40,7 +40,7 @@ class Level_system(commands.Cog):
             #d = ImageDraw.Draw(img)
             #d.text((10,10), "Hello World", fill=(255,255,0))
 
-            upscale_factor=10
+            upscale_factor=20
             base_size_pfp=700
             base_size_outside=base_size_pfp+30
 
@@ -117,13 +117,12 @@ class Level_system(commands.Cog):
             #level_up_bar=Image.open(os.getcwd()+"\\level_pictures\\1.jpg").convert("RGBA")
 
             curve_length = 200
-            bar_length_max = 1000
+            bar_length_max = 1500
             bar_inner_color = (0, 255, 0) #change
             bar_outer_color = (0, 0, 255) # change
 
             final_curve_size_x = 100
             final_curve_size_y = final_curve_size_x*2
-
 
             left_side_curve = Image.new('L',(curve_length*upscale_factor, curve_length*upscale_factor*2), color=0)
             left_side_curve_draw= ImageDraw.Draw(left_side_curve)
@@ -133,11 +132,28 @@ class Level_system(commands.Cog):
 
             right_side_curve = left_side_curve.rotate(180)
 
-            middle_bar = Image.new('RGBA', (bar_length_max, final_curve_size_y), color=bar_inner_color)
-            curve_color = Image.new('RGBA', (final_curve_size_x, final_curve_size_y), color=bar_inner_color)
+
+            real_bar_length = int(remaining_xp / ((display_level+1)**2+99) * bar_length_max)
+
+            if real_bar_length <= 2*curve_length:
+                print("less so 0 for bar length")
+                real_bar_length=0
+
+            print("pixel length = "+str(real_bar_length))
+            middle_bar_inner = Image.new('RGBA', (real_bar_length, final_curve_size_y), color=bar_inner_color)
+            curve_color_inner = Image.new('RGBA', (final_curve_size_x, final_curve_size_y), color=bar_inner_color)
+
+            middle_bar_outer = Image.new('RGBA', (bar_length_max, final_curve_size_y), color=bar_outer_color)
+            curve_color_outer = Image.new('RGBA', (final_curve_size_x, final_curve_size_y), color=bar_outer_color)
 
 
-            final_display.paste(curve_color, (name_displacement_x,700),left_side_curve)
+            final_display.paste(curve_color_outer, (name_displacement_x,700),left_side_curve)
+            final_display.paste(middle_bar_outer, (name_displacement_x+curve_color_inner.width, 700))
+            final_display.paste(curve_color_outer, (name_displacement_x+curve_color_inner.width+middle_bar_outer.width, 700), right_side_curve)
+
+            final_display.paste(curve_color_inner, (name_displacement_x,700),left_side_curve)
+            final_display.paste(middle_bar_inner, (name_displacement_x+curve_color_outer.width, 700))
+            final_display.paste(curve_color_inner, (name_displacement_x+curve_color_outer.width+middle_bar_inner.width, 700), right_side_curve)
 
             final_display.save(os.getcwd()+"\\"+str(ctx.author.id)+'_sent_card.png')
 
@@ -147,7 +163,7 @@ class Level_system(commands.Cog):
             arr=BytesIO()
             final_display.save(arr, format='png',optimize=True)
             arr.seek(0)
-            
+
             await ctx.channel.send(file=discord.File(arr, "my_rank.png"))
 
     # for the table
