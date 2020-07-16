@@ -15,6 +15,8 @@ import random
 
 import asyncio
 
+from io import BytesIO
+
 class Faucet(commands.Cog):
     def __init__(self, bot):
             self.bot=bot
@@ -104,7 +106,7 @@ class Faucet(commands.Cog):
                 async with ctx.author.typing():
                     confirmation_message = await ctx.author.send("Catcha is correct... attempting to withdraw now")
 
-                    if amount is not None and is_a_number(amount) is False:
+                    if amount is not None and global_functions.is_a_number(amount) is False:
                         await ctx.author.send("You have inputed an invalid amount")
                         return
 
@@ -126,7 +128,7 @@ class Faucet(commands.Cog):
 
                         modify_db_balance(ctx.author.id, -1*current_balance)
 
-                    elif is_a_number(amount) is True:
+                    elif global_functions.is_a_number(amount) is True:
                         amount=float(amount)
                         if(amount < crypto_perams.FAUCET_MIN_WITHDRAW):
                             print("you need to be above minimum withdraw balance")
@@ -149,18 +151,30 @@ class Faucet(commands.Cog):
 
     @commands.command()
     async def claim(self,ctx):
+        conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
+        cursor=conn.cursor()
+
+        search_command= 'SELECT * FROM FAUCET_ADDRESSES WHERE USER_ID = ?'
+        cursor.execute(search_command,(ctx.author.id,))
+
+        user_entry = cursor.fetchone()
+        if user_entry is None:
+            print("register first")
+            return
+
         last_claimed_time = get_db_time(ctx.author.id)
         current_time = int(time.time())
 
         if current_time - last_claimed_time <= crypto_perams.FAUCET_TIME_DELAY:
+            await ctx.channel.send("You are still too early")
             return
 
-        captcha_answer = generate_captcha(ctx.author)
+        captcha_answer = await generate_captcha(ctx.author)
 
         user_captcha_response= await get_response(self,ctx)
 
         if user_captcha_response == False:
-            #send crap
+            await ctx.channel.send("You did not reply in time")
             return
         elif str(user_captcha_response)==str(captcha_answer):
             modify_db_balance(ctx.author.id,crypto_perams.FAUCET_REWARD)
@@ -200,7 +214,7 @@ def modify_db_address(discord_id,crypto_address):
     print("registered")
 
 def modify_db_balance(discord_id,amount_to_add):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     add_command = 'UPDATE FAUCET_ADDRESSES SET BALANCE = ? WHERE USER_ID = ?'
@@ -214,7 +228,7 @@ def modify_db_balance(discord_id,amount_to_add):
     conn.close()
 
 def modify_db_time(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     add_command = 'UPDATE FAUCET_ADDRESSES SET TIME = ? WHERE USER_ID = ?'
@@ -227,7 +241,7 @@ def modify_db_time(discord_id):
     conn.close()
 
 def get_db_balance(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     search_command= 'SELECT * FROM FAUCET_ADDRESSES WHERE USER_ID = ?'
@@ -240,7 +254,7 @@ def get_db_balance(discord_id):
     return balance
 
 def get_db_address(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     search_command= 'SELECT * FROM FAUCET_ADDRESSES WHERE USER_ID = ?'
@@ -253,12 +267,12 @@ def get_db_address(discord_id):
     return addie
 
 def get_db_time(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'faucet_info.db')
+    conn=sqlite3.connect(os.getcwd()+'\\faucet_info.db')
     cursor=conn.cursor()
 
     search_command= 'SELECT * FROM FAUCET_ADDRESSES WHERE USER_ID = ?'
     cursor.execute(search_command,(discord_id,))
-    unix_time = cursor.fetchone()[4]
+    unix_time = cursor.fetchone()[2]
 
     cursor.close()
     conn.close()
@@ -273,9 +287,14 @@ async def generate_captcha(user):
 
     captcha_image_file_name = os.getcwd()+"\\faucet_images\\"+str(user.id)+"_captcha_image.png"
     image = image_captcha.generate_image(captcha_answer)
-    image_captcha.write(captcha_answer, captcha_image_file_name)
 
-    await user.send(file=discord.File(captcha_image_file_name))
+
+
+    arr=BytesIO()
+    image.save(arr, format='png',optimize=True)
+    arr.seek(0)
+
+    await user.send(file=discord.File(arr, "captcha.png"))
 
     return captcha_answer
 
@@ -287,19 +306,11 @@ async def get_response(self,ctx):
         print("waiting for message")
         message = await self.bot.wait_for('message', timeout=30.0, check=check)
     except asyncio.TimeoutError:
-        await ctx.author.send('you did not respond in time')
         return False;
     else:
         print("replied in time and is from same user")
         print("message content="+message.content)
         return message.content
-
-def is_a_number(number):
-    try:
-        float(number)
-        return True
-    except ValueError:
-        return False
 
 def setup(bot):
     bot.add_cog(Faucet(bot))

@@ -19,5 +19,8 @@ GITHUB_WEBHOOK_NAME="Official DOGEC Github"
 GITHUB_WEBHOOK_CHANNEL=706308543376130081
 
 TIMEZONE='est'
-#level,role_id
-LEVELS=[[1,"First"],[2,"Second"]]
+#level,role name
+LEVELS=[[1,"First"],[2,"Second"],[3,"3"],[4,"4"],[5,"5"],[6,"6"],[7,"7"]]
+
+XP_INCRAMENT=5 #range of added xp 1-> this value
+XP_TIME_MIN=10 #amount of seconds between each reward

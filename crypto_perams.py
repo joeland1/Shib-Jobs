@@ -19,3 +19,7 @@ FAUCET_CAPTCHALENGTH = 5
 FAUCET_MIN_WITHDRAW = 0.1 #do we really need and upper withdraw, can implement if needed?
 FAUCET_REWARD=0.05
 FAUCET_TIME_DELAY=5 #in seconds
+
+MNO_LINK='https://masternodes.online/currencies/DOGEC/'
+PRICE_SOURCE_LINK='https://coinmarketcap.com/currencies/dogecash/'
+WALLET_LINK='https://github.com/dogecash/dogecash/releases'
