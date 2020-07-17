@@ -22,20 +22,20 @@ class Level_system(commands.Cog):
         if arg1 is None:
             display_level=1
             #whatever equation you want, but minus 1, idk y it jsut works
-            while display_level**2+99 < get_xp_value(ctx.author.id):
+            total_xp = get_xp_value(ctx.author.id)
+            while display_level**2+99 < total_xp:
                 display_level+=1
+                total_xp-=display_level**2+99
             #use while to get Levels
             #use for to get role
             display_level-=1
 
-            remaining_xp= get_xp_value(ctx.author.id)-(display_level**2+99)
-            if remaining_xp < 0:
+            if display_level == 0:
                 remaining_xp = get_xp_value(ctx.author.id)
+            else:
+                remaining_xp = total_xp
 
-            print(str(get_xp_value(ctx.author.id)))
-            print(str(remaining_xp))
-
-            final_display = Image.new('RGB', (3000, 1000), color = (73, 109, 137))
+            final_display = Image.new('RGB', (3500, 1000), color = (73, 109, 137))
 
             #d = ImageDraw.Draw(img)
             #d.text((10,10), "Hello World", fill=(255,255,0))
@@ -79,7 +79,7 @@ class Level_system(commands.Cog):
 
             final_display_text = ImageDraw.Draw(final_display)
 
-            font_size = 200
+            font_size = 150
             discriminator_size=font_size-35
             min_font_size = 30
 
@@ -117,7 +117,7 @@ class Level_system(commands.Cog):
             #level_up_bar=Image.open(os.getcwd()+"\\level_pictures\\1.jpg").convert("RGBA")
 
             curve_length = 200
-            bar_length_max = 1500
+            bar_length_max = 2000
             bar_inner_color = (0, 255, 0) #change
             bar_outer_color = (0, 0, 255) # change
 
@@ -219,6 +219,33 @@ class Level_system(commands.Cog):
 
         print("author id="+str(ctx.author.id))
         modify_xp_value(ctx.author.id)
+        #top part for xp, bottom part for roles
+
+        user_level=1
+        #whatever equation you want, but minus 1, idk y it jsut works
+        while user_level**2+99 < get_xp_value(ctx.author.id):
+            user_level+=1
+        user_level-=1
+
+        role_bridge=-1
+        role_name=""
+
+        for level_index, role_set in enumerate(config.LEVELS):
+            if user_level >= role_set[0]:
+                role_bridge = level_index
+                role_name = role_set[1]
+
+        while role_bridge >= 0:
+            for user_role in ctx.author.roles:
+                if config.LEVELS[role_bridge][1] == user_role.name:
+                    print(role_set[1]+"is in")
+                else:
+                    print("user doesn thave the role they should have:"+config.LEVELS[role_bridge][1])
+
+            role_bridge-=1
+
+        #for user_role in ctx.author.roles:
+
     #@commands.command()
     #async def remove(self,ctx):
 
@@ -317,7 +344,6 @@ def get_last_time(discord_id):
         return 0
     else:
         return entry[2]
-
 
 def setup(bot):
     bot.add_cog(Level_system(bot))
