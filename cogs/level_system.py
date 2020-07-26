@@ -20,20 +20,9 @@ class Level_system(commands.Cog):
     async def rank(self, ctx, arg1=None):
         #level up algo: x^2+10-> will determine level rank for level "x" so level 0 requires 10 pts before getting to lv 1
         if arg1 is None:
-            display_level=1
             #whatever equation you want, but minus 1, idk y it jsut works
-            total_xp = get_xp_value(ctx.author.id)
-            while display_level**2+99 < total_xp:
-                display_level+=1
-                total_xp-=display_level**2+99
-            #use while to get Levels
-            #use for to get role
-            display_level-=1
 
-            if display_level == 0:
-                remaining_xp = get_xp_value(ctx.author.id)
-            else:
-                remaining_xp = total_xp
+            display_level, remaining_xp = get_xp_info(ctx.author.id)
 
             final_display = Image.new('RGB', (3500, 1000), color = (73, 109, 137))
 
@@ -221,11 +210,7 @@ class Level_system(commands.Cog):
         modify_xp_value(ctx.author.id)
         #top part for xp, bottom part for roles
 
-        user_level=1
-        #whatever equation you want, but minus 1, idk y it jsut works
-        while user_level**2+99 < get_xp_value(ctx.author.id):
-            user_level+=1
-        user_level-=1
+        user_level = get_xp_info(ctx.author.id)[0]
 
         role_bridge=-1
         role_name=""
@@ -238,10 +223,17 @@ class Level_system(commands.Cog):
         while role_bridge >= 0:
             for user_role in ctx.author.roles:
                 if config.LEVELS[role_bridge][1] == user_role.name:
-                    print(role_set[1]+"is in")
+                    continue
                 else:
                     print("user doesn thave the role they should have:"+config.LEVELS[role_bridge][1])
 
+            adding_role = discord.utils.get(ctx.guild.roles, name=config.LEVELS[role_bridge][1])
+            if adding_role is None:
+                adding_role = await ctx.guild.create_role(name=config.LEVELS[role_bridge][1])
+                print("created a level role which didn't exist")
+
+            await ctx.author.add_roles(adding_role, reason="leveling")
+            print("added a role")
             role_bridge-=1
 
         #for user_role in ctx.author.roles:
@@ -347,3 +339,20 @@ def get_last_time(discord_id):
 
 def setup(bot):
     bot.add_cog(Level_system(bot))
+
+def get_xp_info(discord_id):
+    total_xp = get_xp_value(discord_id)
+    display_level=1
+    while display_level**2+99 < total_xp:
+        display_level+=1
+        total_xp-=display_level**2+99
+    #use while to get Levels
+    #use for to get role
+    display_level-=1
+
+    if display_level == 0:
+        left_over = get_xp_value(discord_id)
+    else:
+        left_over = total_xp
+
+    return [display_level, left_over]
