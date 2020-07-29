@@ -26,4 +26,4 @@ JOIN_ROLE='join role name'
 XP_INCRAMENT=20 #range of added xp 1-> this value
 XP_TIME_MIN=1 #amount of seconds between each reward
 
-FAQ_CHAT_ID=1
+FAQ_CHAT_ID=737919318624305183

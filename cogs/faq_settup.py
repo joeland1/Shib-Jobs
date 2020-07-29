@@ -1,8 +1,14 @@
 from discord.ext import commands
+import discord
+import json
+import os
+import config
 
 class FAQ(commands.Cog):
     def __init__(self, bot):
             self.bot=bot
+            self.faq_questions=json.loads(open(os.getcwd()+"\\faq.json").read()).items()
+            self.faq_message=None
     #@commands.Cog.listener() -> use for events like on_ready
 
     @commands.command()
@@ -23,6 +29,14 @@ class FAQ(commands.Cog):
 
         if arg1 is None:
             ctx.channel.send("You need to specify which question you want removed")
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        embed=discord.Embed(title="Shib FAQ")
+        for question,answer in self.faq_questions:
+            embed.add_field(name=question, value=answer, inline=False)
+        faq_channel=self.bot.get_channel(config.FAQ_CHAT_ID)
+        await faq_channel.send(content="",embed=embed)
 
 def setup(bot):
     bot.add_cog(FAQ(bot))
