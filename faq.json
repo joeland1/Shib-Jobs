@@ -1,4 +1,14 @@
 {
-  "question1":"answer1",
-  "question2":"answer2"
+  "What is the max supply for DOGEC?":"21,000,000 DOGEC",
+  "What was the amount of pre-mine?":"1,050,000 DOGEC",
+  "How many coins are required for a masternode?":"5,000 DOGEC",
+  "How many coins are required for staking?":"100 DOGEC",
+  "What is the average block time?":"1 Minute",
+  "How long is the maturity time?":"Around an hour",
+  "What algo are you using?":"Quark",
+  "Why is my wallet not staking?":"Make sure your wallet is synced and open.",
+  "Do locked MN coins stake?":"Coins locked in a masternode do not stake, however, rewards that you keep in your wallet do.",
+  "Where can I buy DOGEC?":"DOGEC is currently being traded on CryptoBridge and Stex.",
+  "How do you setup a DOGEC Masternode?":"The MN setup guide can be found here.",
+  "What is an Orphan block?":"Orphan blocks typically occur when two entities produce a new block at almost the same time. One makes it into the blockchain, and the other, the \"orphan\" does not."
 }

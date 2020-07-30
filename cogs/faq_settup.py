@@ -3,11 +3,12 @@ import discord
 import json
 import os
 import config
+import sys
 
 class FAQ(commands.Cog):
     def __init__(self, bot):
             self.bot=bot
-            self.faq_questions=json.loads(open(os.getcwd()+"\\faq.json").read()).items()
+            self.faq_questions=json.loads(open(os.getcwd()+"\\faq.json").read())
             self.faq_message=None
     #@commands.Cog.listener() -> use for events like on_ready
 
@@ -33,7 +34,12 @@ class FAQ(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         embed=discord.Embed(title="Shib FAQ")
-        for question,answer in self.faq_questions:
+
+        if len(self.faq_questions) == 0:
+            print("faq not set up properly")
+            return sys.exit(4)
+
+        for question,answer in self.faq_questions.items():
             embed.add_field(name=question, value=answer, inline=False)
         faq_channel=self.bot.get_channel(config.FAQ_CHAT_ID)
         await faq_channel.send(content="",embed=embed)
