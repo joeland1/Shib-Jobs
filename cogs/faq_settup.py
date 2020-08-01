@@ -4,11 +4,11 @@ import json
 import os
 import config
 import sys
+import global_functions
 
 class FAQ(commands.Cog):
     def __init__(self, bot):
             self.bot=bot
-            self.faq_questions=json.loads(open(os.getcwd()+"\\faq.json").read())
             self.faq_message=None
     #@commands.Cog.listener() -> use for events like on_ready
 
@@ -21,28 +21,54 @@ class FAQ(commands.Cog):
         embed=discord.Embed(title="FAQ",color=discord.Color.from_rgb(193,151,79))
 
     @commands.command()
+    # !add_faq <question> <answer> <optional for location>
     async def add_faq(self,ctx):
+        if global_functions(ctx.author) is False:
+            print("not admin, cannot modify faq")
+            return
+
         print("add q+a to faq")
 
     @commands.command()
-    async def remove_faq(self,ctx,arg1=None):
+    async def rm_faq(self,ctx,arg1=None):
         print("removing question # arg1")
+
+        if global_functions(ctx.author) is False:
+            print("not admin, cannot modify faq")
+            return
 
         if arg1 is None:
             ctx.channel.send("You need to specify which question you want removed")
 
+        with open(os.getcwd()+"\\faq.json", 'w') as faq_questions:
+            for iteration,question,answer in enumerate(json.loads(faq_questions.read()).items()):
+                print(str(iteration)+" "+question)
+
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+            if len(faq_questions) == 0:
+                embed=discord.Embed(title="Shib FAQ", description="There are no questions in the FAQ")
+                await self.faq_message.edit(content="", embed=embed)
+                return
+
+
+
     @commands.Cog.listener()
     async def on_ready(self):
-        embed=discord.Embed(title="Shib FAQ")
+        with open(os.getcwd()+"\\faq.json") as faq_questions:
 
-        if len(self.faq_questions) == 0:
-            print("faq not set up properly")
-            return sys.exit(4)
+            faq_quetions_data = json.loads(faq_questions.read())
 
-        for question,answer in self.faq_questions.items():
-            embed.add_field(name=question, value=answer, inline=False)
+            if len(faq_quetions_data) == 0:
+                embed=discord.Embed(title="Shib FAQ", description="There are no questions in the FAQ")
+
+            else:
+                embed=discord.Embed(title="Shib FAQ")
+                for question,answer in faq_quetions_data.items():
+                    embed.add_field(name=question, value=answer, inline=False)
+
         faq_channel=self.bot.get_channel(config.FAQ_CHAT_ID)
-        await faq_channel.send(content="",embed=embed)
+        self.faq_message =  await faq_channel.send(content="",embed=embed)
 
 def setup(bot):
     bot.add_cog(FAQ(bot))
