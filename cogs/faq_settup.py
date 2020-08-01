@@ -33,18 +33,22 @@ class FAQ(commands.Cog):
     async def rm_faq(self,ctx,arg1=None):
         print("removing question # arg1")
 
-        if global_functions(ctx.author) is False:
+        if global_functions.checkmodrole(ctx.author) is False:
             print("not admin, cannot modify faq")
             return
 
         if arg1 is None:
             ctx.channel.send("You need to specify which question you want removed")
+            return
+
+        if global_functions.is_a_number(arg1) is False:
+            ctx.channel.send("Not a valid input")
+            return
 
         with open(os.getcwd()+"\\faq.json", 'w') as faq_questions:
             for iteration,question,answer in enumerate(json.loads(faq_questions.read()).items()):
-                print(str(iteration)+" "+question)
-
-            json.dump(data, f, ensure_ascii=False, indent=4)
+                print(str(iteration))
+                print(question)
 
             if len(faq_questions) == 0:
                 embed=discord.Embed(title="Shib FAQ", description="There are no questions in the FAQ")
