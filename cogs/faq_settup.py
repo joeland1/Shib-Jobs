@@ -30,31 +30,40 @@ class FAQ(commands.Cog):
         print("add q+a to faq")
 
     @commands.command()
-    async def rm_faq(self,ctx,arg1=None):
-        print("removing question # arg1")
+    async def rm_faq(self,ctx,skip_question_number=None):
+        print("removing question # skip_question_number")
 
-        if global_functions.checkmodrole(ctx.author) is False:
+        if global_functions.checkmodrole(ctx) is False:
             print("not admin, cannot modify faq")
             return
 
-        if arg1 is None:
+        if skip_question_number is None:
             ctx.channel.send("You need to specify which question you want removed")
-            return
 
-        if global_functions.is_a_number(arg1) is False:
-            ctx.channel.send("Not a valid input")
-            return
+        if global_functions.is_a_number(skip_question_number) is False:
+            ctx.channel.send("Not valid input")
 
-        with open(os.getcwd()+"\\faq.json", 'w') as faq_questions:
-            for iteration,question,answer in enumerate(json.loads(faq_questions.read()).items()):
+        with open(os.getcwd()+"\\faq.json") as faq_questions:
+            faq_questions_data = json.loads(faq_questions.read()).items()
+            print(faq_questions_data)
+
+            faq_question_data_final = []
+            for iteration,question_set in enumerate(faq_questions_data):
                 print(str(iteration))
-                print(question)
 
-            if len(faq_questions) == 0:
-                embed=discord.Embed(title="Shib FAQ", description="There are no questions in the FAQ")
-                await self.faq_message.edit(content="", embed=embed)
-                return
+                if iteration == int(skip_question_number) + 1:
+                    print("skipped a question")
+                    continue
+                faq_question_data_final.append({question_set[0],question_set[1]})
 
+                
+
+                if len(faq_questions_data_final) == 0:
+                    embed=discord.Embed(title="Shib FAQ", description="There are no questions in the FAQ123")
+                    await self.faq_message.delete()
+                    faq_channel=self.bot.get_channel(config.FAQ_CHAT_ID)
+                    self.faq_message = await faq_channel.send(content="", embed=embed)
+                    return
 
 
     @commands.Cog.listener()
