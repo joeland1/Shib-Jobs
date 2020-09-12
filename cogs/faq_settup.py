@@ -45,26 +45,36 @@ class FAQ(commands.Cog):
 
         with open(os.getcwd()+"\\faq.json") as faq_questions:
             faq_questions_data = json.loads(faq_questions.read()).items()
-            print(faq_questions_data)
 
-            faq_question_data_final = []
+            faq_question_data_final = {}
             for iteration,question_set in enumerate(faq_questions_data):
                 print(str(iteration))
 
-                if iteration == int(skip_question_number) + 1:
-                    print("skipped a question")
+                if iteration == int(skip_question_number) - 1:
+                    print("skipped question at index "+str(iteration))
                     continue
-                faq_question_data_final.append({question_set[0],question_set[1]})
+                faq_question_data_final[question_set[0]] = question_set[1]
 
-                
+            if len(faq_question_data_final) == 0:
+                embed=discord.Embed(title="Shib FAQ", description="You have removed the last faq question")
+                await self.faq_message.delete()
+                faq_channel=self.bot.get_channel(config.FAQ_CHAT_ID)
+                self.faq_message = await faq_channel.send(content="", embed=embed)
+                return
 
-                if len(faq_questions_data_final) == 0:
-                    embed=discord.Embed(title="Shib FAQ", description="There are no questions in the FAQ123")
-                    await self.faq_message.delete()
-                    faq_channel=self.bot.get_channel(config.FAQ_CHAT_ID)
-                    self.faq_message = await faq_channel.send(content="", embed=embed)
-                    return
+            else:
+                embed=discord.Embed(title="Shib FAQ")
+                await self.faq_message.delete()
+                faq_channel=self.bot.get_channel(config.FAQ_CHAT_ID)
 
+                for question,answer in faq_question_data_final.items():
+                    embed.add_field(name=question, value=answer, inline=False)
+                self.faq_message = await faq_channel.send(content="", embed=embed)
+
+                print(faq_question_data_final)
+                #json_object = json.dumps(faq_question_data_final, indent = 4)
+                with open(os.getcwd()+"\\faq.json", "w") as outfile:
+                    json.dump(faq_question_data_final, outfile)
 
     @commands.Cog.listener()
     async def on_ready(self):

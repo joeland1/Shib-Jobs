@@ -89,7 +89,10 @@ class Faucet(commands.Cog):
         user_entry = cursor.fetchone()
         if user_entry is None:
             print("register first")
+            cursor.close()
+            conn.close()
             return
+            
         cursor.close()
         conn.close()
 
