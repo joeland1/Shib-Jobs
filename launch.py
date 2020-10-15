@@ -3,6 +3,7 @@ import config
 import os
 import sys
 import secure_tokens
+import sqlite3
 
 from discord.ext import commands
 intents = discord.Intents.all()
@@ -15,15 +16,19 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
-for filename in os.listdir(os.getcwd()+f'\\cogs'):
-    for filename_mod_tools in os.listdir(os.getcwd()+f'\\cogs\\mod_tools'):
-        if filename.endswith('.py'):
-            client.load_extension(f'cogs.{filename_mod_tools[:-3]}')
-    if filename.endswith('.py'):
-        client.load_extension(f'cogs.{filename[:-3]}')
+conn=sqlite3.connect(os.getcwd()+'\\lauch.db')
+cursor=conn.cursor()
+cursor.execute("SELECT * FROM MOD_STUFF")
+data=cursor.fetchone()
+cog_names = [description[0] for description in cursor.description]
 
-if config.PERG_HOUR>=24:
-    print("Change your pergatory hours to proper conversion. It's too big") #niceeeeeeeeeee
-    sys.exit(4)
+if data[0] == 1:
+    for index, command in enumerate(data[1:], start=1):
+        if command == 2:
+            client.load_extension(f'cogs.mod_tools.{cog_names[index]}')
 
-client.run(secure_tokens.DISCORD_TOKEN)
+token_entry=cursor.execute("SELECT * FROM DISCORD_TOKEN")
+
+token = token_entry.fetchone()[0]
+
+client.run(str(token))

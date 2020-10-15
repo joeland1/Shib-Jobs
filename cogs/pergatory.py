@@ -12,6 +12,11 @@ class Pergatory(commands.Cog):
             self.bot=bot
     #@commands.Cog.listener() -> use for events like on_ready
     @commands.Cog.listener()
+    async def on_ready(self):
+        if config.PERG_HOUR>=24:
+            print("Change your pergatory hours to proper conversion. It's too big") #niceeeeeeeeeee
+            sys.exit(4)
+    @commands.Cog.listener()
     async def on_member_join(self, member):
         time_difference = datetime.utcnow()-member.created_at
         if time_difference.days > config.PERG_DAY and time_difference.seconds//3600 > config.PERG_HOUR:

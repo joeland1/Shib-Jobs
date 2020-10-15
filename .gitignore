@@ -4,3 +4,4 @@ cogs/__pycache__
 secure_tokens.py
 rank_recording.db
 *.png
+lauch.db
