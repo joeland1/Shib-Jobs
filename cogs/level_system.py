@@ -342,17 +342,13 @@ def setup(bot):
 
 def get_xp_info(discord_id):
     total_xp = get_xp_value(discord_id)
-    display_level=1
-    while display_level**2+99 < total_xp:
+    display_level=0
+    while display_level**2+99 <= total_xp:
         display_level+=1
         total_xp-=display_level**2+99
     #use while to get Levels
     #use for to get role
-    display_level-=1
 
-    if display_level == 0:
-        left_over = get_xp_value(discord_id)
-    else:
-        left_over = total_xp
+    left_over = total_xp
 
     return [display_level, left_over]
