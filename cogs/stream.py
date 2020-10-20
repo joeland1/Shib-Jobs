@@ -5,26 +5,40 @@ from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.transports.zmq import ZmqClientTransport
 from tinyrpc import RPCClient
 
-ctx = zmq.Context()
-
 
 
 class Stream(commands.Cog):
     def __init__(self, bot):
-            self.bot=bot
-    #@commands.Cog.listener() -> use for events like on_ready
-
-rpc_client = RPCClient(JSONRPCProtocol(),ZmqClientTransport.create(ctx, 'tcp://127.0.0.1:5001'))
-remote_server = rpc_client.get_proxy()
-
-result = remote_server.join()
-print("Server answered: "+str(result))
-
+        self.bot=bot
+        self.api = RPCClient(JSONRPCProtocol(),ZmqClientTransport.create(zmq.Context(), 'tcp://127.0.0.1:5001')).get_proxy()
+        self.api.launch()
+                #@commands.Cog.listener() -> use for events like on_ready
 
     @commands.command()
-    async def watch(self, ctx):
-        watched_show = ctx.content.replace(config.PREFIX+"watch", "")
-        print(watched_show)
+    async def stream(self, ctx, arg1=None):
+        if arg1 == 'play':
+            await play(self,ctx)
+        elif arg1 == 'pause':
+            await pause(self,ctx)
+        elif arg1 == 'resume':
+            await resume(self,ctx)
+        elif arg1 in ['disconnect','dc']:
+            await disconnect(self,ctx)
+        else:
+            print("invalid peram")
+
+    async def play(self, ctx):
+        print("play livestream")
+
+    async def pause(self, ctx):
+        print("paused livestream")
+
+    async def resume(self, ctx):
+        print("resume")
+
+    async def disconnect(self, ctx):
+        print("stop mpv")
+        print("disconnect from vc -> but leave discord on")
 
 def setup(bot):
     bot.add_cog(Stream(bot))
