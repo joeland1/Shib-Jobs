@@ -24,8 +24,8 @@ class Stream(commands.Cog):
             await pause(self,ctx)
         elif arg1 == 'resume':
             await resume(self,ctx)
-        elif arg1 == 'join':
-            await join(self,ctx)
+        elif arg1 == 'next':
+            await next_vid(self,ctx)
         elif arg1 in ['disconnect','dc','fuckoff']:
             await disconnect(self,ctx)
         else:
@@ -50,8 +50,8 @@ async def pause(cog, ctx):
 async def resume(cog, ctx):
     cog.rpc_client.resume()
 
-async def join(cog,ctx):
-    cog.rpc_client.join()
+async def next_vid(cog,ctx):
+    cog.rpc_client.next_vid()
 
 async def disconnect(cog, ctx):
     cog.rpc_client.dc()
