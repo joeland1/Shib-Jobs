@@ -228,6 +228,7 @@ class Level_system(commands.Cog):
                     print("user doesn thave the role they should have:"+config.LEVELS[role_bridge][1])
 
             adding_role = discord.utils.get(ctx.guild.roles, name=config.LEVELS[role_bridge][1])
+            
             if adding_role is None:
                 adding_role = await ctx.guild.create_role(name=config.LEVELS[role_bridge][1])
                 print("created a level role which didn't exist")
