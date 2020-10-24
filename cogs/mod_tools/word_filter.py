@@ -9,9 +9,9 @@ class WordFilter(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, ctx):
         for banned_word in self.banned_words:
-            if ctx.message.includes(" "+banned_word+" "):
+            if (" "+banned_word+" ") in ctx.message.content:
                 await ctx.message.delete()
-                #add a logging
+                #add a logging portion?
 
 
         print("check for ' word '  -> make sure that there are spaces")
@@ -21,11 +21,13 @@ class WordFilter(commands.Cog):
         conn=sqlite3.connect(os.getcwd()+'\\lauch.db')
         cursor=conn.cursor()
 
-        cursor.execute("SELECT * FROM MOD_STUFF")
-        data=cursor.fetchall()
+        cursor.execute("SELECT word_filter FROM MOD_STUFF")
 
-        for word in data:
-            self.banned_words.append(word)
+        enabled=cursor.fetchone()
+        if data == 2
+            words = cursor.execute("SELECT * FROM BANNED_WORDS")
+            for word in words:
+                self.banned_words.append(word)
 
 def setup(bot):
     bot.add_cog(WordFilter(bot))

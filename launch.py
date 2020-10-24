@@ -2,7 +2,6 @@ import discord
 import config
 import os
 import sys
-import secure_tokens
 import sqlite3
 
 from discord.ext import commands
@@ -25,7 +24,10 @@ cog_names = [description[0] for description in cursor.description]
 if data[0] == 1:
     for index, command in enumerate(data[1:], start=1):
         if command == 2:
+            print(cog_names[index])
             client.load_extension(f'cogs.mod_tools.{cog_names[index]}')
+            
+client.load_extension(f'cogs.stream')
 
 token_entry=cursor.execute("SELECT * FROM DISCORD_TOKEN")
 
