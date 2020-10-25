@@ -5,7 +5,6 @@ import discord
 class MusicCog(commands.Cog):
     def __init__(self, bot):
             self.bot=bot
-            self.music_list=[]
             #self.rpc_client = RPCClient(JSONRPCProtocol(),ZmqClientTransport.create(zmq.Context(), 'tcp://127.0.0.1:5002')).get_proxy()
     #@commands.Cog.listener() -> use for events like on_ready
 
@@ -14,11 +13,11 @@ class MusicCog(commands.Cog):
         if arg1 == 'play':
             await play(self,ctx,arg2)
         elif arg1 == 'pause':
-            await pause(self,ctx)
+            ctx.voice_client.pause()
         elif arg1 == 'resume':
-            await resume(self,ctx)
+            ctx.voice_client.resume()
         elif arg1 in ['disconnect','dc']:
-            await disconnect(self,ctx)
+            await ctx.voice_client.disconnect()
 
 def setup(bot):
     bot.add_cog(MusicCog(bot))
@@ -38,11 +37,3 @@ async def play(self, ctx, link):
     source = await discord.FFmpegOpusAudio.from_probe(URL)
     vc = await ctx.author.voice.channel.connect()
     vc.play(source)
-
-
-async def pause(self, ctx):
-    print("play livestream")
-async def resume(self, ctx):
-    print("play livestream")
-async def disconnect(self, ctx):
-    print("play livestream")
