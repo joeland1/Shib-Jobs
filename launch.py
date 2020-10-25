@@ -26,8 +26,8 @@ if data[0] == 1:
         if command == 2:
             print(cog_names[index])
             client.load_extension(f'cogs.mod_tools.{cog_names[index]}')
-            
-client.load_extension(f'cogs.stream')
+
+client.load_extension(f'cogs.music_and_stream.music')
 
 token_entry=cursor.execute("SELECT * FROM DISCORD_TOKEN")
 
