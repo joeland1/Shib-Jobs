@@ -29,6 +29,9 @@ class MusicCog(commands.Cog):
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info('https://www.youtube.com/watch?v='+self.link_id[0], download=True)
 
+        if self.voice_chat is None:
+            print('vc disconnected')
+            return
         self.voice_chat.play(discord.FFmpegPCMAudio(self.link_id[0]+'.stream'), after=lambda e: self.continue_voice(self))
         del self.link_id[0]
 
@@ -40,6 +43,7 @@ class MusicCog(commands.Cog):
         if arg1 == 'play':
             #this only adds to the list and starts going through the list of links
             link=arg2
+
             if 'list=' in link:
                 ydl_opts_for_playlist = {
                     'format': 'bestaudio/best[ext=webm]',
@@ -50,6 +54,9 @@ class MusicCog(commands.Cog):
                     info = ydl.extract_info(link, download=False)
                     for index,entry in enumerate(info['entries']):
                         self.link_id.append(entry['id'])
+                        print('added -> '+entry['id'])
+
+                print(self.link_id)
 
                 if self.voice_chat is None:
                     for file in os.listdir():
@@ -84,7 +91,7 @@ class MusicCog(commands.Cog):
                         'outtmpl': self.link_id[0]+'.stream'}
                     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info('https://www.youtube.com/watch?v='+self.link_id[0], download=True)
-                    source =  discord.FFmpegPCMAudio(self.link_id[0]+'.stream')
+                        source =  discord.FFmpegPCMAudio(self.link_id[0]+'.stream')
                     del self.link_id[0]
 
                     self.voice_chat = await ctx.author.voice.channel.connect()
@@ -116,12 +123,12 @@ class MusicCog(commands.Cog):
                 'outtmpl': self.link_id[0]+'.stream'}
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info('https://www.youtube.com/watch?v='+self.link_id[0], download=True)
-            source =  discord.FFmpegPCMAudio(self.link_id[0]+'.stream')
+                source =  discord.FFmpegPCMAudio(self.link_id[0]+'.stream')
             del self.link_id[0]
 
             self.voice_chat.play(source, after=lambda e: self.continue_voice(self))
         elif arg1 in ['disconnect','dc']:
-            await ctx.voice_client.disconnect()
+            await self.voice_chat.disconnect()
             self.voice_chat.cleanup()
             self.voice_chat = None
 
