@@ -34,38 +34,66 @@ class MusicCog(commands.Cog):
 
     @commands.command()
     async def music(self, ctx, arg1=None, arg2=None):
+        #source = discord.FFmpegOpusAudio(info['formats'][0]['url'])
+        #source = await discord.FFmpegOpusAudio.from_probe('music_source')
+        #source = discord.FFmpegPCMAudio(info['formats'][0]['url'])
         if arg1 == 'play':
             #this only adds to the list and starts going through the list of links
             link=arg2
-
-                #source = discord.FFmpegOpusAudio(info['formats'][0]['url'])
-                #source = await discord.FFmpegOpusAudio.from_probe('music_source')
-                #source = discord.FFmpegPCMAudio(info['formats'][0]['url'])
-            self.link_id.append(link.split('v=')[1])
-            print('addedurl='+link.split('v=')[1])
-
-            #need to start a vc chain
-            if self.voice_chat is None:
-                for file in os.listdir():
-                    if file.endswith('.stream'):
-                        os.remove(file)
-                ydl_opts = {
+            if 'list=' in link:
+                ydl_opts_for_playlist = {
                     'format': 'bestaudio/best[ext=webm]',
                     'before_options':'-reconnect 5 -reconnect_streamed 5 -reconnect_delay_max 6000',
                     'continuedl': True,
-                    'outtmpl': self.link_id[0]+'.stream'}
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info('https://www.youtube.com/watch?v='+self.link_id[0], download=True)
-                source =  discord.FFmpegPCMAudio(self.link_id[0]+'.stream')
-                del self.link_id[0]
+                    'extract_flat':True}
+                with youtube_dl.YoutubeDL(ydl_opts_for_playlist) as ydl:
+                    info = ydl.extract_info(link, download=False)
+                    for index,entry in enumerate(info['entries']):
+                        self.link_id.append(entry['id'])
 
-                self.voice_chat = await ctx.author.voice.channel.connect()
-                self.voice_chat.play(source, after=lambda e: self.continue_voice(self))
+                if self.voice_chat is None:
+                    for file in os.listdir():
+                        if file.endswith('.stream'):
+                            os.remove(file)
+                    ydl_opts = {
+                        'format': 'bestaudio/best[ext=webm]',
+                        'before_options':'-reconnect 5 -reconnect_streamed 5 -reconnect_delay_max 6000',
+                        'continuedl': True,
+                        'outtmpl': self.link_id[0]+'.stream'}
+                    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info('https://www.youtube.com/watch?v='+self.link_id[0], download=True)
+                    source =  discord.FFmpegPCMAudio(self.link_id[0]+'.stream')
+                    del self.link_id[0]
+
+                    self.voice_chat = await ctx.author.voice.channel.connect()
+                    self.voice_chat.play(source, after=lambda e: self.continue_voice(self))
+
+            elif 'v=' in link and 'list=' not in link:
+                self.link_id.append(link.split('v=')[1])
+                print('addedurl='+link.split('v=')[1])
+
+                #need to start a vc chain
+                if self.voice_chat is None:
+                    for file in os.listdir():
+                        if file.endswith('.stream'):
+                            os.remove(file)
+                    ydl_opts = {
+                        'format': 'bestaudio/best[ext=webm]',
+                        'before_options':'-reconnect 5 -reconnect_streamed 5 -reconnect_delay_max 6000',
+                        'continuedl': True,
+                        'outtmpl': self.link_id[0]+'.stream'}
+                    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info('https://www.youtube.com/watch?v='+self.link_id[0], download=True)
+                    source =  discord.FFmpegPCMAudio(self.link_id[0]+'.stream')
+                    del self.link_id[0]
+
+                    self.voice_chat = await ctx.author.voice.channel.connect()
+                    self.voice_chat.play(source, after=lambda e: self.continue_voice(self))
 
         elif arg1 == 'pause':
-            ctx.voice_chat.pause()
+            self.voice_chat.pause()
         elif arg1 == 'resume':
-            ctx.voice_chat.resume()
+            self.voice_chat.resume()
         elif arg1 == 'next':
             if len(self.link_id) == 0:
                 await self.voice_chat.disconnect()
@@ -85,17 +113,17 @@ class MusicCog(commands.Cog):
                 'format': 'bestaudio/best[ext=webm]',
                 'before_options':'-reconnect 5 -reconnect_streamed 5 -reconnect_delay_max 6000',
                 'continuedl': True,
-                'outtmpl': self.link_id[0]}
+                'outtmpl': self.link_id[0]+'.stream'}
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info('https://www.youtube.com/watch?v='+self.link_id[0], download=True)
             source =  discord.FFmpegPCMAudio(self.link_id[0]+'.stream')
             del self.link_id[0]
-            print('after delete next ='+str(self.link_id))
 
             self.voice_chat.play(source, after=lambda e: self.continue_voice(self))
         elif arg1 in ['disconnect','dc']:
             await ctx.voice_client.disconnect()
             self.voice_chat.cleanup()
+            self.voice_chat = None
 
 def setup(bot):
     bot.add_cog(MusicCog(bot))

@@ -4,3 +4,4 @@ cogs/__pycache__
 rank_recording.db
 *.png
 lauch.db
+*.stream
