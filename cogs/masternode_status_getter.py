@@ -62,7 +62,7 @@ class Masternode_status_getter(commands.Cog):
                 await ctx.channel.send(embed=embed)
 
             #except:
-            #    print("ya done fucked it up")
+            #    print("ya done goofed it")
             #listmasternodes
             #validateaddress
 

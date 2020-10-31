@@ -24,7 +24,6 @@ class unban_command(commands.Cog):
         await self.bot.get_channel(config.BAN_LOG).send(embed=embed)
 
     @commands.command()
-    #change this shit to bans
     async def unban(self, ctx, members: commands.Greedy[discord.Member], hatban: commands.Greedy[int], *, reason=None):
         if global_functions.checkmodrole(ctx) is True:
             #bans based on id in text

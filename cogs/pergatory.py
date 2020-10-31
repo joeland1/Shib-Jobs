@@ -41,7 +41,7 @@ class Pergatory(commands.Cog):
         else:
             await ctx.channel.send("You have no perms")
 
-    #need something so that users can verify on their own
+    #need something so that users can verify on their own ,captcha?
 
 def setup(bot):
     bot.add_cog(Pergatory(bot))

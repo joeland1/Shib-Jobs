@@ -13,9 +13,6 @@ class WordFilter(commands.Cog):
                 await ctx.message.delete()
                 #add a logging portion?
 
-
-        print("check for ' word '  -> make sure that there are spaces")
-
     @commands.Cog.listener()
     async def on_ready(self):
         conn=sqlite3.connect(os.getcwd()+'\\lauch.db')
