@@ -16,33 +16,50 @@ class Stream(commands.Cog):
         #self.rpc_client.play()
                 #@commands.Cog.listener() -> use for events like on_ready
     @commands.command()
-    async def stream(self, ctx, arg1=None, arg2=None):
+    async def stream(self, ctx, arg1=None, arg2=None, local_specifications=None):
         print(arg1)
         if arg1 == 'play':
-            await play(self,arg2,ctx)
+            await play(self,arg2,ctx, local_specifications)
         elif arg1 == 'pause':
             await pause(self,ctx)
         elif arg1 == 'resume':
             await resume(self,ctx)
         elif arg1 == 'next':
             await next_vid(self,ctx)
-        elif arg1 in ['disconnect','dc','fuckoff']:
+        elif arg1 in ['disconnect','dc']:
             await disconnect(self,ctx)
         else:
             print("invalid peram")
 
+    @commands.command()
+    async def test123(self):
+        print(cog.rpc_client.is_in_vc())
+
 def setup(bot):
     bot.add_cog(Stream(bot))
 
-async def play(cog,arg, ctx):
-    '''if ctx.guild is None:
+async def play(cog,arg, ctx, local_specifications=None):
+    if ctx.guild is None:
         print("cannot stream in dm")
         return
-    if ctx.message.author.voice.channel is None:
+    if ctx.message.author.voice is None:
         print('not in vc')
-        return'''
-    if arg.startswith('https://youtube.com/') or arg.startswith('https://www.youtube.com') or arg.startswith('http://youtu.be'):
-        cog.rpc_client.play(arg)
+        return
+
+    if arg.startswith('https://youtube.com/') or arg.startswith('https://www.youtube.com') or arg.startswith('https://youtu.be'):
+        cog.rpc_client.play(arg, ctx.guild.name)
+    else:
+        conn=sqlite3.connect(os.getcwd()+'\\lauch.db')
+        cursor=conn.cursor()
+
+        #entry = name, path
+        search_command= 'SELECT PATH FROM DOWNLOADED_FILES WHERE (NAME = ?)'
+        cursor.execute(search_command,('witcher'))
+        directory_name = cursor.fetchone()[0]
+        cog.rpc_client.play(directory_name+'.'+local_specifications)
+
+        cursor.close()
+        conn.close()
 
 async def pause(cog, ctx):
     cog.rpc_client.pause()
