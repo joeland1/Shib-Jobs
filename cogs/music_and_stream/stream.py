@@ -31,10 +31,6 @@ class Stream(commands.Cog):
         else:
             print("invalid peram")
 
-    @commands.command()
-    async def test123(self):
-        print(cog.rpc_client.is_in_vc())
-
 def setup(bot):
     bot.add_cog(Stream(bot))
 

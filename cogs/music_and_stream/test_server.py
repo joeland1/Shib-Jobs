@@ -17,11 +17,16 @@ from tinyrpc.dispatch import RPCDispatcher
 import pywinauto.mouse as mouse
 from pywinauto import Application
 
+#try force window
 import youtube_dlc as youtube_dl2
-import youtube_dl as youtube_dc
+import youtube_dl as youtube_dl
+import ffmpeg
+
 
 video_player = mpv.MPV(ytdl=False)
-app = Application(backend="uia").start(r'C:\Users\joe_land1\AppData\Local\Discord\app-0.0.308\Discord.exe')
+video_player.force_window='yes'
+#video_player.idle='yes'
+app = Application(backend="uia").start(r'path to discord')
 #app = Application(backend="uia").connect(path=r'C:\Users\joe_land1\AppData\Local\Discord\app-0.0.308\Discord.exe')
 
 ctx = zmq.Context()
@@ -29,14 +34,16 @@ dispatcher = RPCDispatcher()
 transport = ZmqServerTransport.create(ctx, 'tcp://127.0.0.1:5001')
 rpc_server = RPCServer(transport, JSONRPCProtocol(), dispatcher)
 
-time.sleep(6)
+playlist=[]
+current_resolution=None
+time.sleep(2)
 
 try:
     email = app['Discord'].window(title='Email', control_type='Edit', found_index=0)
-    email.type_keys(config.EMAIL)
+    email.type_keys('')
 
     email = app['Discord'].window(title='Password', control_type='Edit', found_index=0)
-    email.type_keys(config.PW)
+    email.type_keys('')
 
     email = app['Discord'].window(title='Login', control_type='Button', found_index=0)
     email.click()
@@ -44,7 +51,7 @@ try:
     time.sleep(3)
 
     try:
-        button = app['Discord'].window(title='Quick Question!', found_index=0).window(title='No. Keep this off.', control_type='Button', found_index=0).click()
+        button = app['Discord'].window(title='Quick Question!', found_index=0).window(title='Ndo. Keep this off.', control_type='Button', found_index=0).click()
     except ElementNotFoundError:
         print('cancelled prompt for first popup')
 
@@ -55,28 +62,30 @@ try:
 except:
     print('Could not find login menu -> Means we are logged in')
 
-
 @dispatcher.public
 def play(path_or_link, guild_name):
-    while get_youtube_file_download(path_or_link) is False:
-        get_youtube_file_download(path_or_link)
 
-    video_player.playlist_append('filler.stream')
-    video_player.playlist_pos = 0
-    video_player.wait_until_playing()
-    video_player.pause=True
-    join()
-    video_player.pause=False
+    if len(playlist) == 0:
+        playlist.append((path_or_link, 1))
+        if get_youtube_file_download((path_or_link, 1)) is False:
+            print('it aint worked')
+        print(playlist)
 
-    if len(video_player.playlist)+1 == len(video_player.playlist):
-        video_player.playlist_pos = 0
-        video_player.wait_until_playing()
+        video_player.playlist_append('1.stream')
+        print(video_player.playlist)
         video_player.pause=True
-        video_player.wait_for_property('core-idle')
+        video_player.playlist_pos=0
+        video_data=ffmpeg.probe('1.stream')
+        current_resolution=(video_data['streams'][0]["height"], video_data['streams'][0]["width"])
         join()
         video_player.pause=False
+        print('join play ran')
 
-    print('play')
+
+    else:
+        name = playlist[len(playlist)-1][1]+1
+        playlist.append((path_or_link, name   ))
+        print('add play ran')
 
 @dispatcher.public
 def pause():
@@ -88,26 +97,40 @@ def resume():
 
 @dispatcher.public
 def next_vid():
-    video_player.playlist_pos+=1
+    print('next')
 
+    if len(playlist) == 0:
+        print('already at last video, quitting')
+        video_player.stop()
+        dc()
+
+    os.remove(str(playlist[0][1])+'.stream')
+
+    while len(playlist) != 0:
+        if get_youtube_file_download(playlist[0]) is False:
+            del playlist[0]
+            print('could not get this one, getting next video')
+        else:
+            video_player.playlist_pos=-1
+            video_player.playlist_remove(0)
+            video_player.playlist_append(playlist[0][1]+'.stream')
+            video_player.playlist_pos=0
 
 def join():
     print('joining')
     app['Discord'].set_focus()
     win = app['Discord'].window(title='Servers sidebar', control_type='Group', found_index=0)
-
-    target = win.window(title='Servers', found_index=0).window(title=' self', found_index=0)
     app['Discord'].set_focus()
-    mouse.click(coords=(target.rectangle().mid_point()))
-
-    vc = app['Discord'].window(title='self (server)', control_type='Group', found_index=0).window(title_re="General (voice channel)*.", control_type="Button")
-    vc.click()
+    #target = win.window(title='Servers', found_index=0).child_window(title=' self',control_type='TreeItem', found_index=0).parent()
+    mouse.click(coords=(win.window(title='Servers', found_index=0).descendants(control_type='Image')[0].rectangle().mid_point()))
+    app['Discord'].window(title='self (server)', control_type='Group', found_index=0).window(title_re="General (voice channel)*.", control_type="Button").click()
 
     time.sleep(3)
 
     app['Discord'].window(title='User area', control_type='Pane', found_index=0).window(title='Share Your Screen', control_type='Button').click()
     screenshare_tab = app['Discord'].window(title='Screen Share', found_index=0)
-    screenshare_tab.window(title_re=u'.*- mpv', control_type='Button', found_index=0).click()
+    screenshare_tab.print_control_identifiers()
+    screenshare_tab.window(title_re='.*- mpv', control_type='Button', found_index=0).click()
     screenshare_tab.window(title='Go Live', control_type='Button', found_index=0).click()
 
 @dispatcher.public
@@ -118,32 +141,56 @@ def dc():
 
 @video_player.event_callback('end-file')
 def check_playlist(event):
-    if video_player.playlist_pos==-1:
-        print("end of line")
-        dc()
-    else:
-        print("playlistpos= "+str(video_player.playlist_pos))
-        print('videos left'+str(len(video_player.playlist)))
+    print('check_plyalist')
+    del playlist[0]
+    print(playlist)
+    print('del')
 
-def get_youtube_file_download(name):
+    if len(playlist)==0:
+        print("end of line")
+        app['Discord'].window(title='User area', control_type='Pane', found_index=0).window(title='Disconnect', found_index=0).click()
+        video_player.playlist_clear()
+        print('disconnecting')
+    else:
+        while get_youtube_file_download(playlist[0]) is False:
+            del playlist[0]
+            print('could not get this one, getting next video')
+
+            if len(playlist) == 0:
+                print('deleted last item, quitting now')
+                dc()
+                return
+
+        #cant use .play -> doesnt keep window
+        video_player.playlist_pos=-1
+        #get_youtube_file_download(playlist[0])
+        video_player.playlist_append(str(playlist[0][1])+'.stream')
+        video_player.playlist_remove(0)
+        video_player.pause=True
+        video_player.playlist_pos=0
+        video_player.pause=False
+
+
+def get_youtube_file_download(url):
     for file in os.listdir():
-        if file.endswith('.stream'):
+        if file == str(url[1])+'.stream':
             os.remove(file)
+    print(url[0])
     ydl_opts = {
         'format': 'best',
         #'before_options':'-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
         #'continuedl': True,
-        'outtmpl': 'filler.stream',
+        'outtmpl': str(url[1])+'.stream',
         '--verbose': True}
     try:
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(name, download=True)
+            info = ydl.extract_info(url[0], download=True)
         print('download worked with youtube-dl')
     except:
-        print('error on try 1, trying again')
+        print('error on youtube-dl, trying again')
         try:
             with youtube_dl2.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(name, download=True)
+                info = ydl.extract_info(url[0], download=True)
             print('download worked with youtube-dlc')
         except:
             print('both tries failed, booking it')
