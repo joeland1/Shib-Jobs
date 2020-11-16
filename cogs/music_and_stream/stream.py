@@ -25,7 +25,7 @@ class Stream(commands.Cog):
         elif arg1 == 'resume':
             await resume(self,ctx)
         elif arg1 == 'next':
-            await next_vid(self,ctx)
+             self.rpc_client.next_vid()
         elif arg1 in ['disconnect','dc']:
             await disconnect(self,ctx)
         else:

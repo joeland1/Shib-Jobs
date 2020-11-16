@@ -26,7 +26,7 @@ import ffmpeg
 video_player = mpv.MPV(ytdl=False)
 video_player.force_window='yes'
 #video_player.idle='yes'
-app = Application(backend="uia").start(r'path to discord')
+app = Application(backend="uia").start(r'C:\Users\joe_land1\AppData\Local\Discord\app-0.0.308\Discord.exe')
 #app = Application(backend="uia").connect(path=r'C:\Users\joe_land1\AppData\Local\Discord\app-0.0.308\Discord.exe')
 
 ctx = zmq.Context()
@@ -97,24 +97,8 @@ def resume():
 
 @dispatcher.public
 def next_vid():
-    print('next')
-
-    if len(playlist) == 0:
-        print('already at last video, quitting')
-        video_player.stop()
-        dc()
-
-    os.remove(str(playlist[0][1])+'.stream')
-
-    while len(playlist) != 0:
-        if get_youtube_file_download(playlist[0]) is False:
-            del playlist[0]
-            print('could not get this one, getting next video')
-        else:
-            video_player.playlist_pos=-1
-            video_player.playlist_remove(0)
-            video_player.playlist_append(playlist[0][1]+'.stream')
-            video_player.playlist_pos=0
+    #check_playlist function runs when this happens
+    video_player.seek('+'+str(video_player.time_remaining))
 
 def join():
     print('joining')
@@ -129,7 +113,6 @@ def join():
 
     app['Discord'].window(title='User area', control_type='Pane', found_index=0).window(title='Share Your Screen', control_type='Button').click()
     screenshare_tab = app['Discord'].window(title='Screen Share', found_index=0)
-    screenshare_tab.print_control_identifiers()
     screenshare_tab.window(title_re='.*- mpv', control_type='Button', found_index=0).click()
     screenshare_tab.window(title='Go Live', control_type='Button', found_index=0).click()
 
@@ -165,6 +148,7 @@ def check_playlist(event):
         video_player.playlist_pos=-1
         #get_youtube_file_download(playlist[0])
         video_player.playlist_append(str(playlist[0][1])+'.stream')
+        print(video_player.playlist)
         video_player.playlist_remove(0)
         video_player.pause=True
         video_player.playlist_pos=0
