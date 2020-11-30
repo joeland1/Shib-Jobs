@@ -14,7 +14,8 @@ class Stream(commands.Cog):
         self.rpc_client = RPCClient(JSONRPCProtocol(),ZmqClientTransport.create(zmq.Context(), 'tcp://127.0.0.1:5001')).get_proxy()
 
         #self.rpc_client.play()
-                #@commands.Cog.listener() -> use for events like on_ready
+                #@commands.Cog.listener() -> use for events like on_ready   
+
     @commands.command()
     async def stream(self, ctx, arg1=None, arg2=None, local_specifications=None):
         print(arg1)
@@ -43,7 +44,7 @@ async def play(cog,arg, ctx, local_specifications=None):
         return
 
     if arg.startswith('https://youtube.com/') or arg.startswith('https://www.youtube.com') or arg.startswith('https://youtu.be'):
-        cog.rpc_client.play(arg, ctx.guild.name)
+        cog.rpc_client.play(arg, ctx.guild.name, ctx.author.voice.channel.name)
     else:
         conn=sqlite3.connect(os.getcwd()+'\\lauch.db')
         cursor=conn.cursor()
