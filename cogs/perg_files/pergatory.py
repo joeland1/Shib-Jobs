@@ -18,7 +18,6 @@ class Pergatory(commands.Cog):
             print("Change your pergatory hours to proper conversion. It's too big") #niceeeeeeeeeee
             sys.exit(4)
 
-
     #based on time
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -30,7 +29,7 @@ class Pergatory(commands.Cog):
             await member.add_roles(perg_add_role)
             await self.bot.get_channel(config.PERG_LOG).send(member.mention+" is locked in perg")
 
-        elif:  
+        elif:
             time_difference = datetime.utcnow()-member.created_at
             if time_difference.days > config.PERG_DAY and time_difference.seconds//3600 > config.PERG_HOUR:
                 #old account
