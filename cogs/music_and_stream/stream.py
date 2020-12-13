@@ -14,7 +14,10 @@ class Stream(commands.Cog):
         self.rpc_client = RPCClient(JSONRPCProtocol(),ZmqClientTransport.create(zmq.Context(), 'tcp://127.0.0.1:5001')).get_proxy()
 
         #self.rpc_client.play()
-                #@commands.Cog.listener() -> use for events like on_ready   
+                #@commands.Cog.listener() -> use for events like on_ready
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.rpc_client.set_login("username", "password")
 
     @commands.command()
     async def stream(self, ctx, arg1=None, arg2=None, local_specifications=None):
@@ -22,13 +25,13 @@ class Stream(commands.Cog):
         if arg1 == 'play':
             await play(self,arg2,ctx, local_specifications)
         elif arg1 == 'pause':
-            await pause(self,ctx)
+            self.rpc_client.pause()
         elif arg1 == 'resume':
-            await resume(self,ctx)
+            self.rpc_client.resume()
         elif arg1 == 'next':
              self.rpc_client.next_vid()
         elif arg1 in ['disconnect','dc']:
-            await disconnect(self,ctx)
+            self.rpc_client.dc()
         else:
             print("invalid peram")
 
@@ -45,27 +48,3 @@ async def play(cog,arg, ctx, local_specifications=None):
 
     if arg.startswith('https://youtube.com/') or arg.startswith('https://www.youtube.com') or arg.startswith('https://youtu.be'):
         cog.rpc_client.play(arg, ctx.guild.name, ctx.author.voice.channel.name)
-    else:
-        conn=sqlite3.connect(os.getcwd()+'\\lauch.db')
-        cursor=conn.cursor()
-
-        #entry = name, path
-        search_command= 'SELECT PATH FROM DOWNLOADED_FILES WHERE (NAME = ?)'
-        cursor.execute(search_command,('witcher'))
-        directory_name = cursor.fetchone()[0]
-        cog.rpc_client.play(directory_name+'.'+local_specifications)
-
-        cursor.close()
-        conn.close()
-
-async def pause(cog, ctx):
-    cog.rpc_client.pause()
-
-async def resume(cog, ctx):
-    cog.rpc_client.resume()
-
-async def next_vid(cog,ctx):
-    cog.rpc_client.next_vid()
-
-async def disconnect(cog, ctx):
-    cog.rpc_client.dc()

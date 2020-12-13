@@ -9,8 +9,9 @@ class WordFilter(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, ctx):
         for banned_word in self.banned_words:
-            if (" "+banned_word+" ") in ctx.message.content:
+            if banned_word in ctx.message.content:
                 await ctx.message.delete()
+                await ctx.guild.ban(ctx.author)
                 #add a logging portion?
 
     @commands.Cog.listener()
