@@ -4,6 +4,8 @@ basepath = os.path.dirname(os.path.abspath(__file__))
 dllspath = os.path.join(basepath)
 os.environ['PATH'] = dllspath + os.pathsep + os.environ['PATH']
 
+import sqlite3
+
 import config
 import mpv
 import time
@@ -39,11 +41,20 @@ current_resolution=None
 time.sleep(2)
 
 try:
+    conn=sqlite3.connect('stream_server.db')
+    cursor=conn.cursor()
+
+    cursor.execute("SELECT * FROM LOGIN_STUFF")
+    login_creds = cursor.fetchone()
+
     email = app['Discord'].window(title='Email', control_type='Edit', found_index=0)
-    email.type_keys('')
+    email.type_keys(login_creds[0])
 
     email = app['Discord'].window(title='Password', control_type='Edit', found_index=0)
-    email.type_keys('')
+    email.type_keys(login_creds[1])
+
+    cursor.close()
+    conn.close()
 
     email = app['Discord'].window(title='Login', control_type='Button', found_index=0)
     email.click()
@@ -51,7 +62,7 @@ try:
     time.sleep(3)
 
     try:
-        button = app['Discord'].window(title='Quick Question!', found_index=0).window(title='Ndo. Keep this off.', control_type='Button', found_index=0).click()
+        button = app['Discord'].window(title='Quick Question!', found_index=0).window(title='No. Keep this off.', control_type='Button', found_index=0).click()
     except ElementNotFoundError:
         print('cancelled prompt for first popup')
 
@@ -63,7 +74,7 @@ except:
     print('Could not find login menu -> Means we are logged in')
 
 @dispatcher.public
-def play(path_or_link, guild_name):
+def play(path_or_link, guild_name, voice_name):
 
     if len(playlist) == 0:
         playlist.append((path_or_link, 1))
@@ -77,7 +88,7 @@ def play(path_or_link, guild_name):
         video_player.playlist_pos=0
         video_data=ffmpeg.probe('1.stream')
         current_resolution=(video_data['streams'][0]["height"], video_data['streams'][0]["width"])
-        join()
+        join(guild_name, voice_name)
         video_player.pause=False
         print('join play ran')
 
@@ -100,20 +111,31 @@ def next_vid():
     #check_playlist function runs when this happens
     video_player.seek('+'+str(video_player.time_remaining))
 
-def join():
+def join(guild_name, voice_name):
     print('joining')
     app['Discord'].set_focus()
     win = app['Discord'].window(title='Servers sidebar', control_type='Group', found_index=0)
     app['Discord'].set_focus()
     #target = win.window(title='Servers', found_index=0).child_window(title=' self',control_type='TreeItem', found_index=0).parent()
     mouse.click(coords=(win.window(title='Servers', found_index=0).descendants(control_type='Image')[0].rectangle().mid_point()))
-    app['Discord'].window(title='self (server)', control_type='Group', found_index=0).window(title_re="General (voice channel)*.", control_type="Button").click()
+    app['Discord'].window(title=guild_name+' (server)', control_type='Group', found_index=0).window(title_re=voice_name+" (voice channel)*.", control_type="Button").click()
 
     time.sleep(3)
 
     app['Discord'].window(title='User area', control_type='Pane', found_index=0).window(title='Share Your Screen', control_type='Button').click()
     screenshare_tab = app['Discord'].window(title='Screen Share', found_index=0)
-    screenshare_tab.window(title_re='.*- mpv', control_type='Button', found_index=0).click()
+    got_mpv_button = False
+
+    #this should work but i havent been able to test it, implemented for redundancy anyway
+    while got_mpv_button is False:
+        try:
+            mpv_application_selector_button = screenshare_tab.window(title_re='.*- mpv', control_type='Button', found_index=0).click()
+            got_mpv_button = True
+            print('set true')
+        except:
+            app['Discord'].set_focus()
+            mouse.scroll(coords=app['Discord'].rectangle().mid_point(), wheel_dist = 1)
+
     screenshare_tab.window(title='Go Live', control_type='Button', found_index=0).click()
 
 @dispatcher.public
