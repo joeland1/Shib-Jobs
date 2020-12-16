@@ -10,7 +10,11 @@ class Save_local(commands.Cog):
     @commands.command()
     async def save(self, ctx, arg1=None):
         if arg1 is None:
-            print("missing a source")
+            print("missing a link")
+            return
+
+        
+
 
 def setup(bot):
     bot.add_cog(Save_local(bot))
