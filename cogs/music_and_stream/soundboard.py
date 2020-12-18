@@ -1,6 +1,7 @@
 from discord.ext import commands
+import youtube_dlc as youtube_dl2
 
-class Save_local(commands.Cog):
+class Soundboard(commands.Cog):
     def __init__(self, bot):
         self.bot=bot
 
@@ -9,12 +10,12 @@ class Save_local(commands.Cog):
 
     @commands.command()
     async def save(self, ctx, arg1=None):
-        if arg1 is None:
-            print("missing a link")
+        if arg1 is None and :
+            print("missing a source")
             return
 
-        
+
 
 
 def setup(bot):
-    bot.add_cog(Save_local(bot))
+    bot.add_cog(Soundboard(bot))
