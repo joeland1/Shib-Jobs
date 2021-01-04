@@ -31,11 +31,7 @@ class Pergatory(commands.Cog):
 
         elif self.verify_all is False:
             time_difference = datetime.utcnow()-member.created_at
-            if time_difference.days > config.PERG_DAY and time_difference.seconds//3600 > config.PERG_HOUR:
-                #old account
-                await self.bot.get_channel(config.PERG_LOG).send(member.mention+" has joined")
-
-            else:
+            if time_difference.days < config.PERG_DAY and time_difference.seconds//3600 > config.PERG_HOUR:
                 perg_add_role=discord.utils.get(member.guild.roles, id=config.PERG_ROLE_ID)
                 await member.add_roles(perg_add_role)
                 await self.bot.get_channel(config.PERG_LOG).send(member.mention+" is locked in perg")

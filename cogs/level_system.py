@@ -159,7 +159,7 @@ class Level_system(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         try:
-            conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+            conn=sqlite3.connect(os.getcwd()+'\\databases\\rank_recording.db')
             conn.execute('''CREATE TABLE LEVELS
             (GLOBAL_RANK   INTEGER PRIMARY KEY,
             USER_ID    INT    NOT NULL,
@@ -177,7 +177,7 @@ class Level_system(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self,member):
-        conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+        conn=sqlite3.connect(os.getcwd()+'\\databases\\rank_recording.db')
         cur=conn.cursor()
 
         search_command= 'SELECT * FROM LEVELS WHERE USER_ID = ?'
@@ -228,7 +228,7 @@ class Level_system(commands.Cog):
                     print("user doesn thave the role they should have:"+config.LEVELS[role_bridge][1])
 
             adding_role = discord.utils.get(ctx.guild.roles, name=config.LEVELS[role_bridge][1])
-            
+
             if adding_role is None:
                 adding_role = await ctx.guild.create_role(name=config.LEVELS[role_bridge][1])
                 print("created a level role which didn't exist")
@@ -246,7 +246,7 @@ class Level_system(commands.Cog):
     @commands.Cog.listener()
     async def on_member_ban(self, guild, banned_member):
         print("membver banning occuring")
-        conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+        conn=sqlite3.connect(os.getcwd()+'\\databases\\rank_recording.db')
         conn.execute('DELETE FROM LEVELS WHERE USER_ID = ?',(banned_member.id,))
         conn.commit()
         conn.close()
@@ -263,7 +263,7 @@ class Level_system(commands.Cog):
     async def print_out_levels(self,ctx):
         if global_functions.checkmodrole(ctx) is True:
             print("is admin")
-            conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+            conn=sqlite3.connect(os.getcwd()+'\\databases\\rank_recording.db')
             cursor=conn.cursor()
 
             print("getting data")
@@ -279,7 +279,7 @@ class Level_system(commands.Cog):
 
 
 def modify_xp_value(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+    conn=sqlite3.connect(os.getcwd()+'\\databases\\rank_recording.db')
     cursor=conn.cursor()
 
     #check to see if there are entries
@@ -311,7 +311,7 @@ def modify_xp_value(discord_id):
     conn.close()
 
 def get_xp_value(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+    conn=sqlite3.connect(os.getcwd()+'\\databases\\rank_recording.db')
     cursor=conn.cursor()
 
     search_command= 'SELECT XP FROM LEVELS WHERE USER_ID = ?'
@@ -324,7 +324,7 @@ def get_xp_value(discord_id):
     return xp
 
 def get_last_time(discord_id):
-    conn=sqlite3.connect(os.getcwd()+'\\rank_recording.db')
+    conn=sqlite3.connect(os.getcwd()+'\\databases\\rank_recording.db')
     cursor=conn.cursor()
 
     search_command= 'SELECT * FROM LEVELS WHERE USER_ID = ?'

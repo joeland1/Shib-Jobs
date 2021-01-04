@@ -13,7 +13,7 @@ class WordFilter(commands.Cog):
                 await ctx.guild.ban(ctx.author)
                 #add a logging portion?
 
-    @commands.Cog.listener()
+    '''@commands.Cog.listener()
     async def on_ready(self):
         conn=sqlite3.connect(os.getcwd()+'\\lauch.db')
         cursor=conn.cursor()
@@ -24,7 +24,7 @@ class WordFilter(commands.Cog):
         if data == 2
             words = cursor.execute("SELECT * FROM BANNED_WORDS")
             for word in words:
-                self.banned_words.append(word)
+                self.banned_words.append(word)'''
 
 def setup(bot):
     bot.add_cog(WordFilter(bot))
